@@ -28,6 +28,9 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
+# Set uv index to a domestic mirror for faster installation
+ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+
 # Install dependencies using uv
 RUN uv sync --frozen --no-dev
 
@@ -45,6 +48,8 @@ ENV PYTHONUNBUFFERED=1 \
     APP_NAME=${APP_NAME} \
     APP_VERSION=${APP_VERSION} \
     GIT_COMMIT=${GIT_COMMIT}
+
+ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install runtime dependencies
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \

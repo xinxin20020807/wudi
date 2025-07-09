@@ -26,8 +26,13 @@ spec:
 
   workspaces:
     - name: shared-data
-      persistentVolumeClaim:
-        claimName: tekton-workspace-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
 
   # 简化的超时设置
   timeouts:
