@@ -34,7 +34,7 @@ spec:
   steps:
     - name: build-and-push
       workingDir: $(workspaces.source.path)
-      image: gcr.io/kaniko-project/executor:latest
+      image: uhub.service.ucloud.cn/base-images/executor:latest
       command:
         - /kaniko/executor
       args:
