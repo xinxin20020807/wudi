@@ -39,6 +39,7 @@ spec:
       script: |
         #!/bin/sh
         set -ex
+        git config --global http.version HTTP/1.1
         git clone "$(params.url)" .
         git checkout "$(params.revision)"
         COMMIT_SHA=$(git rev-parse HEAD)
