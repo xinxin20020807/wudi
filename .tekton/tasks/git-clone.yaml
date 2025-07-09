@@ -24,7 +24,7 @@ spec:
       description: The precise URL that was fetched by this Task.
   steps:
     - name: cleanup
-      image: alpine:3.18
+      image: uhub.service.ucloud.cn/base-images/alpine:3.18
       workingDir: $(workspaces.output.path)
       script: |
         #!/bin/sh
@@ -34,7 +34,7 @@ spec:
         find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
 
     - name: clone
-      image: alpine/git
+      image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
       workingDir: $(workspaces.output.path)
       script: |
         #!/bin/sh
