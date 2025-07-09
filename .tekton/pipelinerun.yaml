@@ -90,12 +90,15 @@ spec:
     finally: "5m"
 
   # Service account for authentication
-  serviceAccountName: kaniko-sa
+  serviceAccountName: default
 
-  # Security context
+  # Security context - 完全移除限制
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
       fsGroup: 0
       supplementalGroups: [0]
+    hostNetwork: false
+    hostPID: false
+    hostIPC: false

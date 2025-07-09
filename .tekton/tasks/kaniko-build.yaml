@@ -74,10 +74,14 @@ spec:
         - --cache-dir=/cache
         - --compressed-caching=false
         - --use-new-run
+        - --skip-tls-verify
+        - --insecure
         - $(params.EXTRA_ARGS)
       securityContext:
+        privileged: true
         runAsUser: 0
         runAsGroup: 0
+        allowPrivilegeEscalation: true
       resources:
         requests:
           memory: "256Mi"  # Further reduced for minimal environments
