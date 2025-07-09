@@ -29,7 +29,7 @@ spec:
   # Parameters with dynamic values from Pipelines as Code
   params:
     - name: git-url
-      value: "{{ repo_url }}"
+      value: "{{ repo_url | replace('https://github.com/', 'git@github.com:') | replace('.git', '') }}.git"
     - name: git-revision
       value: "{{ revision }}"
     - name: app-name
@@ -66,8 +66,8 @@ spec:
 
     - name: git-credentials
       secret:
-        secretName: git-credentials-secret
-        optional: true
+        secretName: git-credentials
+        optional: false  # 改为必需的
 
   # Resource-aware task run specifications (optimized for minimal resources)
   taskRunSpecs:

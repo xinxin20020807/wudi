@@ -99,19 +99,6 @@ spec:
         - name: sslVerify
           value: "false"  # 临时禁用 SSL 验证进行测试
 
-    # 注释掉test任务
-    # - name: test
-    #   taskRef:
-    #     name: run-tests
-    #   runAfter:
-    #     - git-clone
-    #   workspaces:
-    #     - name: source
-    #       workspace: shared-data
-    #   params:
-    #     - name: test-goals
-    #       value: "test"
-
     - name: build-and-push
       taskRef:
         name: kaniko-build
