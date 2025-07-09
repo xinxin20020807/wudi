@@ -3,6 +3,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: ci-pipeline
+  namespace: pipelines-as-code
   labels:
     app.kubernetes.io/name: ci-pipeline
     app.kubernetes.io/version: "1.0.0"
