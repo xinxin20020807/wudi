@@ -29,7 +29,7 @@ spec:
   # Parameters with dynamic values from Pipelines as Code
   params:
     - name: git-url
-      value: "git@github.com:xinxin20020807/wudi.git"
+      value: "{{ repo_url }}"
     - name: git-revision
       value: "{{ revision }}"
     - name: app-name
@@ -56,20 +56,14 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 20Gi  # Minimum size required for ebs-ssd storage class
-          storageClassName: ebs-ssd  # Use ebs-ssd storage class for automatic PVC provisioning
+              storage: 20Gi
+          storageClassName: ebs-ssd
 
     - name: docker-credentials
       secret:
         secretName: docker-credentials
         optional: true
 
-    - name: git-credentials
-      secret:
-        secretName: git-credentials
-        optional: false  # 改为必需的
-
-  # Resource-aware task run specifications (optimized for minimal resources)
   taskRunSpecs:
     - pipelineTaskName: git-clone
       computeResources:

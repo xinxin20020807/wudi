@@ -91,13 +91,15 @@ spec:
       workspaces:
         - name: output
           workspace: shared-data
+        - name: basic-auth
+          workspace: git-credentials
       params:
         - name: url
           value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
         - name: sslVerify
-          value: "false"  # 临时禁用 SSL 验证进行测试
+          value: "true"  # HTTPS 可以启用 SSL 验证
 
     - name: build-and-push
       taskRef:
