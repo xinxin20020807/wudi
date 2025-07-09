@@ -12,9 +12,9 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
     # 添加远程 task 注解
     pipelinesascode.tekton.dev/task: "[git-clone, run-tests, kaniko-build]"
-    pipelinesascode.tekton.dev/task-1: "https://github.com/xinxin20020807/gitops/blob/main/.tekton/tasks/git-clone.yaml"
-    pipelinesascode.tekton.dev/task-2: "https://github.com/xinxin20020807/gitops/blob/main/.tekton/tasks/run-tests.yaml"
-    pipelinesascode.tekton.dev/task-3: "https://github.com/xinxin20020807/gitops/blob/main/.tekton/tasks/kaniko-build.yaml"
+    pipelinesascode.tekton.dev/task-1: "https://raw.githubusercontent.com/xinxin20020807/gitops/refs/heads/main/.tekton/tasks/git-clone.yaml"
+    pipelinesascode.tekton.dev/task-2: "https://raw.githubusercontent.com/xinxin20020807/gitops/refs/heads/main/.tekton/tasks/run-tests.yaml"
+    pipelinesascode.tekton.dev/task-3: "https://raw.githubusercontent.com/xinxin20020807/gitops/refs/heads/main/.tekton/tasks/kaniko-build.yaml"
     pipelinesascode.tekton.dev/git-auth-secret: "git-credentials"
 spec:
   pipelineRef:
