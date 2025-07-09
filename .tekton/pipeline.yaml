@@ -92,6 +92,7 @@ spec:
     - name: git-clone
       taskRef:
         name: git-clone
+        namespace: repo-pipelines  # 使用日志中显示的命名空间
       params:
         - name: url
           value: $(params.git-url)
@@ -111,6 +112,7 @@ spec:
     - name: test
       taskRef:
         name: run-tests
+        namespace: repo-pipelines
       runAfter:
         - git-clone
       params:
@@ -132,6 +134,7 @@ spec:
     - name: build-and-push
       taskRef:
         name: kaniko-build
+        namespace: repo-pipelines
       runAfter:
         - test
       params:
