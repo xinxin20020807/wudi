@@ -27,6 +27,9 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
+# Install uv for faster Python package management
+RUN pip install uv
+
 # Set uv index to a domestic mirror for faster installation
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
