@@ -180,6 +180,15 @@ spec:
         #!/usr/bin/env sh
         set -eu
 
+        # 配置 SSH 跳过主机验证
+        mkdir -p "${PARAM_USER_HOME}/.ssh"
+        cat > "${PARAM_USER_HOME}/.ssh/config" << EOF
+        Host github.com
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+        EOF
+        chmod 600 "${PARAM_USER_HOME}/.ssh/config"
+
         if [ "${PARAM_VERBOSE}" = "true" ] ; then
           set -x
         fi
