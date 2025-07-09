@@ -2,7 +2,6 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: ci-pipeline-run
   namespace: pipelines-as-code
   generateName: ci-pipeline-run-
   annotations:
