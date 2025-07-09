@@ -56,7 +56,7 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi  # Reduced from default 5Gi
+              storage: 20Gi  # Minimum size required for ebs-ssd storage class
           storageClassName: ebs-ssd  # Use ebs-ssd storage class for automatic PVC provisioning
 
     - name: docker-credentials
