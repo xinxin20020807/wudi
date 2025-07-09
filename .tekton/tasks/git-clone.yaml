@@ -34,10 +34,15 @@ spec:
       command: ['sh', '-c']
       args:
         - |
-          set -e
+          set -ex
+          echo "Running cleanup as user: $(whoami)"
+          echo "Workspace content before cleanup:"
+          ls -la
           echo "Cleaning up workspace directory..."
           # a safe way to delete contents without deleting the directory itself
           find . -mindepth 1 -delete
+          echo "Workspace content after cleanup:"
+          ls -la
 
     - name: clone
       image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
