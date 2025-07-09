@@ -1,53 +1,22 @@
-# PipelineRun with Pipelines as Code annotations
+# Simplified PipelineRun
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: ci-pipeline-run-pac
+  name: ci-pipeline-run-simple
   namespace: pipelines-as-code
-  labels:
-    app.kubernetes.io/name: ci-pipeline-run
-    app.kubernetes.io/version: "1.0.0"
-  annotations:
-    # Pipelines as Code annotations for GitHub integration
-    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
-    pipelinesascode.tekton.dev/on-target-branch: "[main, master]"
-    pipelinesascode.tekton.dev/on-source-branch: "[main, master, feature/*]"
-    pipelinesascode.tekton.dev/max-keep-runs: "5"
-    pipelinesascode.tekton.dev/task-timeout: "20m"
-    pipelinesascode.tekton.dev/pipeline-timeout: "30m"
-
-    # Git status reporting
-    tekton.dev/git-status: "true"
-
-    # Optional: Custom annotations for better organization
-    description: "CI/CD pipeline for wudi application with Pipelines as Code"
-    version: "1.0.0"
+  generateName: ci-pipeline-run-simple-
 spec:
   pipelineRef:
-    name: ci-pipeline
+    name: ci-pipeline-simple
 
-  # Parameters with dynamic values from Pipelines as Code
   params:
     - name: git-url
       value: "https://github.com/xinxin20020807/wudi"
     - name: git-revision
-      value: "{{ revision }}"
-    - name: app-name
-      value: "wudi-app"
-    - name: app-version
-      value: "{{ revision }}"
-    - name: image-registry
-      value: "uhub.service.ucloud.cn"
-    - name: image-repository
-      value: "base-images/wudi-app"
-    - name: image-tag
-      value: "{{ revision }}"
-    - name: dockerfile-path
-      value: "./Dockerfile"
-    - name: context-path
-      value: "."
+      value: "main"
+    - name: image-name
+      value: "uhub.service.ucloud.cn/base-images/wudi-app:latest"
 
-  # Optimized workspaces with smaller storage requests
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
@@ -56,47 +25,18 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 20Gi
-          storageClassName: ebs-ssd
+              storage: 1Gi
 
-    - name: docker-credentials
-      secret:
-        secretName: docker-credentials
-        optional: false
-
-  taskRunSpecs:
-    - pipelineTaskName: git-clone
-      computeResources:
-        requests:
-          memory: "64Mi"   # Minimal memory for git clone
-          cpu: "50m"       # Minimal CPU for git clone
-        limits:
-          memory: "128Mi"
-          cpu: "100m"
-
-    - pipelineTaskName: build-and-push
-      computeResources:
-        requests:
-          memory: "256Mi"  # Reduced memory for kaniko
-          cpu: "100m"      # Reduced CPU for kaniko
-        limits:
-          memory: "1Gi"    # Reduced memory limit
-          cpu: "500m"      # Reduced CPU limit
-
-  # Aggressive timeouts for faster feedback
+  # 简化的超时设置
   timeouts:
-    pipeline: "30m"
-    tasks: "20m"
-    finally: "5m"
+    pipeline: "10m"
+    tasks: "5m"
 
+  # 使用默认服务账户
+  serviceAccountName: default
 
-
+  # 简化的安全上下文
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
-      fsGroup: 0
-      supplementalGroups: [0]
-    hostNetwork: false
-    hostPID: false
-    hostIPC: false

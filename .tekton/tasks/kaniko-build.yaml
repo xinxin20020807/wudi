@@ -1,68 +1,40 @@
-# Kaniko Build Task
-# This task builds and pushes container images using Kaniko
+# Simplified Kaniko Build Task
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: kaniko-build
+  name: kaniko-build-simple
   namespace: pipelines-as-code
-  labels:
-    app.kubernetes.io/name: kaniko-build
-    app.kubernetes.io/version: "1.0.0"
-  annotations:
-    tekton.dev/pipelines.minVersion: "0.38.0"
-    tekton.dev/categories: Image Build
-    tekton.dev/tags: "image-build,kaniko"
-    tekton.dev/displayName: "Kaniko Build"
-    tekton.dev/platforms: "linux/amd64"
 spec:
   description: |
-    This task builds a container image using Kaniko and pushes it to a registry.
-    Kaniko builds container images from a Dockerfile inside a container or Kubernetes cluster.
+    Simple kaniko build task without push
 
   params:
     - name: IMAGE
-      description: Name (reference) of the image to build
+      description: Name of the image to build
       type: string
     - name: DOCKERFILE
-      description: Path to the Dockerfile to build
+      description: Path to the Dockerfile
       type: string
       default: "./Dockerfile"
     - name: CONTEXT
-      description: The build context used by Kaniko
+      description: The build context
       type: string
       default: "./"
-    - name: EXTRA_ARGS
-      description: Extra args to pass to kaniko
-      type: string
-      default: ""
-    - name: BUILDER_IMAGE
-      description: The image on which builds will run
-      type: string
-      default: "uhub.service.ucloud.cn/base-images/executor:v1.9.0"
 
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
-    - name: dockerconfig
-      description: Includes a docker `config.json`
-      optional: true
-      mountPath: /kaniko/.docker
 
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built
     - name: IMAGE_URL
       description: URL of the image just built
-    - name: IMAGE_SIZE
-      description: Size of the image just built
 
   steps:
     - name: build-and-push
       workingDir: $(workspaces.source.path)
-      image: $(params.BUILDER_IMAGE)
-      env:
-        - name: DOCKER_CONFIG
-          value: /kaniko/.docker
+      image: gcr.io/kaniko-project/executor:latest
       command:
         - /kaniko/executor
       args:
@@ -70,31 +42,15 @@ spec:
         - --context=$(workspaces.source.path)/$(params.CONTEXT)
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --cache=true
-        - --cache-dir=/cache
-        - --compressed-caching=false
-        - --use-new-run
-        - --skip-tls-verify
-        - --insecure
         - --no-push
-        - $(params.EXTRA_ARGS)
+        - --cache=false
       securityContext:
-        privileged: true
         runAsUser: 0
         runAsGroup: 0
-        allowPrivilegeEscalation: true
       resources:
         requests:
-          memory: "256Mi"  # Further reduced for minimal environments
-          cpu: "100m"      # Minimal CPU request
+          memory: "128Mi"
+          cpu: "50m"
         limits:
-          memory: "1Gi"    # Conservative limit
-          cpu: "500m"      # Conservative CPU limit
-      volumeMounts:
-        - name: kaniko-cache
-          mountPath: /cache
-
-  volumes:
-    - name: kaniko-cache
-      emptyDir:
-        sizeLimit: 1Gi  # Minimal cache size for constrained environments
+          memory: "512Mi"
+          cpu: "200m"

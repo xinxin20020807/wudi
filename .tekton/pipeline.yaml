@@ -1,27 +1,14 @@
-# CI Pipeline definition for business repository
+# Simplified CI Pipeline
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ci-pipeline
+  name: ci-pipeline-simple
   namespace: pipelines-as-code
-  labels:
-    app.kubernetes.io/name: ci-pipeline
-    app.kubernetes.io/version: "1.0.0"
-  annotations:
-    tekton.dev/pipelines.minVersion: "0.38.0"
-    tekton.dev/categories: CI
-    tekton.dev/tags: "ci,build,test"
-    tekton.dev/displayName: "CI Pipeline"
-    tekton.dev/platforms: "linux/amd64"
 spec:
   description: |
-    Simplified CI pipeline with three core steps:
-    - Git clone: Source code checkout
-    - Test: Unit and integration tests
-    - Build and push: Container image build and push
+    Minimal CI pipeline with git clone and build
 
   params:
-    # Git parameters
     - name: git-url
       type: string
       description: Git repository URL
@@ -29,89 +16,40 @@ spec:
       type: string
       description: Git revision to checkout
       default: "main"
-
-    # Application parameters
-    - name: app-name
+    - name: image-name
       type: string
-      description: Application name
-    - name: app-version
-      type: string
-      description: Application version
-      default: "latest"
-
-    # Container image parameters
-    - name: image-registry
-      type: string
-      description: Container registry URL
-      default: "uhub.service.ucloud.cn"  # 移除base-images
-    - name: image-repository
-      type: string
-      description: Container image repository
-      default: "base-images/wudi-app"  # 合并路径
-    - name: image-tag
-      type: string
-      description: Container image tag
-      default: "latest"
-    - name: dockerfile-path
-      type: string
-      description: Path to Dockerfile
-      default: "./Dockerfile"
-    - name: context-path
-      type: string
-      description: Build context path
-      default: "."
+      description: Container image name
+      default: "uhub.service.ucloud.cn/base-images/wudi-app:latest"
 
   workspaces:
     - name: shared-data
-      description: Shared workspace for source code and build artifacts
-    - name: docker-credentials
-      description: Docker registry credentials
-      optional: true
-    - name: git-credentials
-      description: Git credentials for private repositories
-      optional: true
-    - name: maven-settings
-      description: Maven settings
-      optional: true
-
-  results:
-    - name: image-url
-      description: Built container image URL
-      value: $(tasks.build-and-push.results.IMAGE_URL)
-    - name: image-digest
-      description: Built container image digest
-      value: $(tasks.build-and-push.results.IMAGE_DIGEST)
-    - name: git-commit
-      description: Git commit SHA
-      value: $(tasks.git-clone.results.commit)
+      description: Shared workspace for source code
 
   tasks:
     - name: git-clone
       taskRef:
-        name: git-clone
+        name: git-clone-simple
       workspaces:
         - name: output
           workspace: shared-data
-        - name: basic-auth
-          workspace: git-credentials
       params:
         - name: url
           value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
-        - name: sslVerify
-          value: "true"  # HTTPS 可以启用 SSL 验证
 
     - name: build-and-push
       taskRef:
-        name: kaniko-build
+        name: kaniko-build-simple
       runAfter:
-        - git-clone  # 修改依赖，直接在git-clone后运行
+        - git-clone
       workspaces:
         - name: source
           workspace: shared-data
-        - name: dockerconfig
-          workspace: docker-credentials
       params:
         - name: IMAGE
-          value: $(params.image-registry)/$(params.image-repository):$(params.git-revision)
+          value: $(params.image-name)
+        - name: DOCKERFILE
+          value: "./Dockerfile"
+        - name: CONTEXT
+          value: "./"
