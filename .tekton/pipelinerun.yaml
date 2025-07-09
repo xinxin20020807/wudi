@@ -1,0 +1,113 @@
+# PipelineRun configuration for business repository
+# This file should be customized for your specific project
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ci-pipeline-run
+  annotations:
+    # Pipeline as Code annotations
+    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main, master, develop]"
+    pipelinesascode.tekton.dev/max-keep-runs: "5"
+    pipelinesascode.tekton.dev/pipeline: "ci-pipeline"
+    pipelinesascode.tekton.dev/task: "[git-clone, test, build-and-push]"
+    # Git parameters will be automatically populated by Pipeline as Code
+    pipelinesascode.tekton.dev/git-auth-secret: "git-credentials"
+spec:
+  pipelineRef:
+    name: ci-pipeline
+  params:
+    # Git parameters (automatically filled by Pipeline as Code)
+    - name: git-url
+      value: "{{ repo_url }}"
+    - name: git-revision
+      value: "{{ revision }}"
+
+    # Application configuration
+    - name: app-name
+      value: "my-app"  # Change to your application name
+    - name: app-version
+      value: "{{ revision }}"
+
+    # Container registry configuration
+    - name: image-registry
+      value: "docker.io"  # Change to your image registry
+    - name: image-repository
+      value: "myorg/my-app"  # Change to your image repository path
+    - name: image-tag
+      value: "{{ revision }}"
+
+  workspaces:
+    # Shared workspace for source code and build artifacts
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: tekton-workspace-pvc
+
+    # Docker credentials for image push
+    - name: docker-credentials
+      secret:
+        secretName: docker-credentials
+
+    # Git credentials for private repositories
+    - name: git-credentials
+      secret:
+        secretName: git-credentials
+
+
+  # Pipeline execution configuration
+  timeouts:
+    pipeline: "1h0m0s"
+    tasks: "30m0s"
+    finally: "5m0s"
+
+  podTemplate:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      fsGroup: 65532
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    tolerations:
+      - key: "tekton"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+                - key: "node-type"
+                  operator: In
+                  values: ["ci"]
+
+  # Resource limits
+  taskRunSpecs:
+    - pipelineTaskName: git-clone
+      taskPodTemplate:
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+    - pipelineTaskName: test
+      taskPodTemplate:
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+    - pipelineTaskName: build-and-push
+      taskPodTemplate:
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"

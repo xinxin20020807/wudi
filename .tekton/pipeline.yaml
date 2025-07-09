@@ -1,0 +1,156 @@
+# CI Pipeline definition for business repository
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ci-pipeline
+  labels:
+    app.kubernetes.io/name: ci-pipeline
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.38.0"
+    tekton.dev/categories: CI
+    tekton.dev/tags: "ci,build,test"
+    tekton.dev/displayName: "CI Pipeline"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: |
+    Simplified CI pipeline with three core steps:
+    - Git clone: Source code checkout
+    - Test: Unit and integration tests
+    - Build and push: Container image build and push
+
+  params:
+    # Git parameters
+    - name: git-url
+      type: string
+      description: Git repository URL
+    - name: git-revision
+      type: string
+      description: Git revision to checkout
+      default: "main"
+
+    # Application parameters
+    - name: app-name
+      type: string
+      description: Application name
+    - name: app-version
+      type: string
+      description: Application version
+      default: "latest"
+
+    # Container image parameters
+    - name: image-registry
+      type: string
+      description: Container registry URL
+      default: "docker.io"
+    - name: image-repository
+      type: string
+      description: Container image repository
+    - name: image-tag
+      type: string
+      description: Container image tag
+      default: "latest"
+    - name: dockerfile-path
+      type: string
+      description: Path to Dockerfile
+      default: "./Dockerfile"
+    - name: context-path
+      type: string
+      description: Build context path
+      default: "."
+
+  workspaces:
+    - name: shared-data
+      description: Shared workspace for source code and build artifacts
+    - name: docker-credentials
+      description: Docker registry credentials
+      optional: true
+    - name: git-credentials
+      description: Git credentials for private repositories
+      optional: true
+    - name: maven-settings
+      description: Maven settings
+      optional: true
+
+  results:
+    - name: image-url
+      description: Built container image URL
+      value: $(tasks.build-and-push.results.IMAGE_URL)
+    - name: image-digest
+      description: Built container image digest
+      value: $(tasks.build-and-push.results.IMAGE_DIGEST)
+    - name: git-commit
+      description: Git commit SHA
+      value: $(tasks.git-clone.results.commit)
+    - name: test-results
+      description: Test execution results
+      value: $(tasks.test.results.test-results)
+
+  tasks:
+    # 1. Clone source code
+    - name: git-clone
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: deleteExisting
+          value: "true"
+        - name: verbose
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-data
+        - name: ssh-directory
+          workspace: git-credentials
+
+    # 2. Run tests
+    - name: test
+      taskRef:
+        name: run-tests
+      runAfter:
+        - git-clone
+      params:
+        - name: test-goals
+          value: "test"
+        - name: integration-test-goals
+          value: "verify"
+        - name: coverage-enabled
+          value: "true"
+        - name: fail-fast
+          value: "true"
+      workspaces:
+        - name: source
+          workspace: shared-data
+        - name: maven-settings
+          workspace: maven-settings
+
+    # 3. Build and push container image
+    - name: build-and-push
+      taskRef:
+        name: kaniko-build
+      runAfter:
+        - test
+      params:
+        - name: IMAGE
+          value: "$(params.image-registry)/$(params.image-repository):$(params.image-tag)"
+        - name: DOCKERFILE
+          value: $(params.dockerfile-path)
+        - name: CONTEXT
+          value: $(params.context-path)
+        - name: EXTRA_ARGS
+          value:
+            - "--build-arg=APP_NAME=$(params.app-name)"
+            - "--build-arg=APP_VERSION=$(params.app-version)"
+            - "--build-arg=GIT_COMMIT=$(tasks.git-clone.results.commit)"
+            - "--label=org.opencontainers.image.source=$(params.git-url)"
+            - "--label=org.opencontainers.image.revision=$(tasks.git-clone.results.commit)"
+        - name: BUILDER_IMAGE
+          value: "gcr.io/kaniko-project/executor:v1.9.0-debug"
+      workspaces:
+        - name: source
+          workspace: shared-data
+        - name: dockerconfig
+          workspace: docker-credentials
