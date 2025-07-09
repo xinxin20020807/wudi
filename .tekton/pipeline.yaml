@@ -95,8 +95,8 @@ spec:
           name: git-clone
 
         params:
-          - name: url
-            value: $(params.git-url)
+        - name: url
+          value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
         - name: deleteExisting
