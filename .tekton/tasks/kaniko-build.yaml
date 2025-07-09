@@ -82,7 +82,6 @@ spec:
           --cache=true \
           --cache-dir=/cache \
           --compressed-caching=false \
-          --snapshot-mode=redo \
           --use-new-run \
           $(params.EXTRA_ARGS) 2>&1 | tee /tmp/kaniko.log
 
