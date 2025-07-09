@@ -33,7 +33,7 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi
+              storage: 20Gi
 
   # 简化的超时设置
   timeouts:
