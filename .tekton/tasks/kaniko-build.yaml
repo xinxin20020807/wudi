@@ -80,6 +80,8 @@ spec:
         capabilities:
           drop:
             - ALL
+        runAsUser: 0
+        runAsGroup: 0
       resources:
         requests:
           memory: "256Mi"  # Further reduced for minimal environments
