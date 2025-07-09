@@ -119,7 +119,7 @@ spec:
         - name: CONTEXT
           value: $(params.context-path)
         - name: EXTRA_ARGS
-          value: "--build-arg=APP_NAME=$(params.app-name) --build-arg=APP_VERSION=$(params.app-version) --build-arg=GIT_COMMIT=$(tasks.git-clone.results.commit) --label=org.opencontainers.image.source=$(params.git-url) --label=org.opencontainers.image.revision=$(tasks.git-clone.results.commit)"
+          value: "--build-arg=APP_NAME=$(params.app-name) --build-arg=APP_VERSION=$(params.app-version) --build-arg=GIT_COMMIT=$(tasks.git-clone.results.commit) --label=org.opencontainers.image.source=$(params.git-url) --label=org.opencontainers.image.revision=$(tasks.git-clone.results.commit) --skip-tls-verify --insecure"
         - name: BUILDER_IMAGE
           value: "uhub.service.ucloud.cn/base-images/executor:v1.9.0-debug"
       workspaces:
