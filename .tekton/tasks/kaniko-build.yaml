@@ -84,7 +84,7 @@ spec:
           --compressed-caching=false \
           --snapshot-mode=redo \
           --use-new-run \
-          $(params.EXTRA_ARGS) 2>&1 | tee /tmp/kaniko.log
+          $(params.EXTRA_ARGS[*]) 2>&1 | tee /tmp/kaniko.log
 
         # Extract image digest and size from logs
         if [ -f $(results.IMAGE_DIGEST.path) ]; then
