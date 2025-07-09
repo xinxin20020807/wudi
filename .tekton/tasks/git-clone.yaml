@@ -1,4 +1,3 @@
-# Simplified Git Clone Task
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -6,65 +5,42 @@ metadata:
   namespace: pipelines-as-code
 spec:
   description: |
-    Simple git clone task with minimal parameters
-
+    Clones a git repository.
   params:
     - name: url
-      description: Repository URL to clone from
+      description: Repository URL to clone from.
       type: string
     - name: revision
-      description: Revision to checkout
+      description: Revision to checkout.
       type: string
       default: "main"
-
   workspaces:
     - name: output
-      description: The git repo will be cloned onto the volume backing this Workspace
-
+      description: The git repo will be cloned onto the volume backing this Workspace.
   results:
     - name: commit
-      description: The precise commit SHA that was fetched by this Task
+      description: The precise commit SHA that was fetched by this Task.
     - name: url
-      description: The precise URL that was fetched by this Task
-
+      description: The precise URL that was fetched by this Task.
   steps:
     - name: cleanup
-      image: uhub.service.ucloud.cn/base-images/alpine:3.18
+      image: alpine:3.18
       workingDir: $(workspaces.output.path)
-      command: ['sh', '-c']
-      args:
-        - |
-          set -e
-          echo "Cleaning up workspace directory..."
-          # a safe way to delete contents without deleting the directory itself
-          find . -mindepth 1 -delete
+      script: |
+        #!/bin/sh
+        set -e
+        echo "Cleaning up workspace directory..."
+        # a safe way to delete contents without deleting the directory itself
+        find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
 
     - name: clone
-      image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
+      image: alpine/git
       workingDir: $(workspaces.output.path)
-
-      env:
-        - name: HOME
-          value: /home/git
-        - name: PARAM_URL
-          value: $(params.url)
-        - name: PARAM_REVISION
-          value: $(params.revision)
-        - name: WORKSPACE_OUTPUT_PATH
-          value: $(workspaces.output.path)
-      command: ['/ko-app/git-init']
-      args:
-        - "-url=$(params.url)"
-        - "-revision=$(params.revision)"
-        - "-path=$(workspaces.output.path)"
-      volumeMounts:
-        - name: home
-          mountPath: /home/git
-          subPath: git
-        - name: home
-          mountPath: /home/git/.ssh
-          subPath: .ssh
-
-  volumes:
-    - name: home
-      emptyDir: {}
+      script: |
+        #!/bin/sh
+        set -ex
+        git clone "$(params.url)" .
+        git checkout "$(params.revision)"
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo -n "$COMMIT_SHA" > "$(results.commit.path)"
+        echo -n "$(params.url)" > "$(results.url.path)"
