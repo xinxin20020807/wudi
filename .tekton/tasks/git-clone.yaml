@@ -28,6 +28,17 @@ spec:
       description: The precise URL that was fetched by this Task
 
   steps:
+    - name: cleanup
+      image: uhub.service.ucloud.cn/base-images/alpine:3.18
+      workingDir: $(workspaces.output.path)
+      command: ['sh', '-c']
+      args:
+        - |
+          set -e
+          echo "Cleaning up workspace directory..."
+          # a safe way to delete contents without deleting the directory itself
+          find . -mindepth 1 -delete
+
     - name: clone
       image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
       workingDir: $(workspaces.output.path)
