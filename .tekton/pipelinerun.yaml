@@ -4,7 +4,7 @@ apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   name: ci-pipeline-run
-  namespace: repo-pipelines
+  namespace: pipelines-as-code
   annotations:
     # Pipeline as Code annotations
     pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
