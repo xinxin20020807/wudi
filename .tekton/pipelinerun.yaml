@@ -103,12 +103,3 @@ spec:
       runAsNonRoot: true
       runAsUser: 65532
       fsGroup: 65532
-    # Optional: Node selector for specific nodes
-    # nodeSelector:
-    #   kubernetes.io/arch: amd64
-    # Tolerations for resource-constrained nodes
-    # tolerations:
-    # - key: "resource-constrained"
-    #   operator: "Equal"
-    #   value: "true"
-    #   effect: "NoSchedule"
