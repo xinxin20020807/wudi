@@ -91,6 +91,8 @@ spec:
     - name: git-clone
       taskRef:
         name: git-clone
+        namespace: pipelines-as-code
+        kind: Task
       params:
         - name: url
           value: $(params.git-url)
@@ -110,6 +112,8 @@ spec:
     - name: test
       taskRef:
         name: run-tests
+        namespace: pipelines-as-code
+        kind: Task
       runAfter:
         - git-clone
 
@@ -134,6 +138,8 @@ spec:
     - name: build-and-push
       taskRef:
         name: kaniko-build
+        namespace: pipelines-as-code
+        kind: Task
       runAfter:
         - test
       params:
