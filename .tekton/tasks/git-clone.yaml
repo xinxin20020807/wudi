@@ -169,6 +169,13 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
       script: |
         #!/usr/bin/env sh
         set -eu

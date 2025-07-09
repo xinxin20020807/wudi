@@ -113,11 +113,11 @@ spec:
         runAsGroup: 0
       resources:
         requests:
-          memory: "1Gi"
-          cpu: "500m"
+          memory: "512Mi"
+          cpu: "250m"
         limits:
-          memory: "4Gi"
-          cpu: "2000m"
+          memory: "2Gi"
+          cpu: "1000m"
       volumeMounts:
         - name: kaniko-cache
           mountPath: /cache
@@ -125,4 +125,4 @@ spec:
   volumes:
     - name: kaniko-cache
       emptyDir:
-        sizeLimit: 5Gi
+        sizeLimit: 2Gi

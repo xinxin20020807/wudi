@@ -1,66 +1,91 @@
-# PipelineRun configuration for business repository
-# This file should be customized for your specific project
+# Optimized PipelineRun for resource-constrained environments
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: ci-pipeline-run
+  name: ci-pipeline-run-optimized
   namespace: pipelines-as-code
+  labels:
+    app.kubernetes.io/name: ci-pipeline-run
+    app.kubernetes.io/version: "1.0.0"
   annotations:
-    # Pipeline as Code annotations
-    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
-    pipelinesascode.tekton.dev/on-target-branch: "[main, master, develop]"
-    pipelinesascode.tekton.dev/max-keep-runs: "5"
-    # 使用本地任务定义，避免远程任务 404 错误
-    pipelinesascode.tekton.dev/task: "[.tekton/tasks/git-clone.yaml, .tekton/tasks/kaniko-build.yaml]"
-    pipelinesascode.tekton.dev/git-auth-secret: "git-credentials"
+    tekton.dev/git-status: "true"
+    tekton.dev/git-url: "https://github.com/your-org/your-repo"
 spec:
   pipelineRef:
     name: ci-pipeline
-    namespace: pipelines-as-code
+
+  # Optimized parameters for smaller resource footprint
   params:
-    # Git parameters (automatically filled by Pipeline as Code)
     - name: git-url
-      value: "{{ repo_url }}"
+      value: "https://github.com/your-org/your-repo.git"
     - name: git-revision
-      value: "{{ revision }}"
-
-    # Application configuration
+      value: "main"
     - name: app-name
-      value: "my-app"  # Change to your application name
+      value: "wudi-app"
     - name: app-version
-      value: "{{ revision }}"
-
-    # Container registry configuration
+      value: "v1.0.0"
     - name: image-registry
-      value: "uhub.service.ucloud.cn"  # Change to your image registry
+      value: "uhub.service.ucloud.cn/base-images"
     - name: image-repository
-      value: "wudi1111/fastapi"  # Change to your image repository path
+      value: "wudi-app"
     - name: image-tag
-      value: "{{ revision }}"
+      value: "latest"
+    - name: dockerfile-path
+      value: "./Dockerfile"
+    - name: context-path
+      value: "."
 
+  # Optimized workspaces with smaller storage requests
   workspaces:
-    # Shared workspace for source code and build artifacts
     - name: shared-data
-      persistentVolumeClaim:
-        claimName: tekton-workspace-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi  # Reduced from default 5Gi
+          storageClassName: standard  # Use appropriate storage class
 
-    # Docker credentials for image push
     - name: docker-credentials
       secret:
-        secretName: docker-credentials
+        secretName: docker-registry-secret
+        optional: true
 
-    # Git credentials for private repositories
     - name: git-credentials
       secret:
-        secretName: git-credentials
+        secretName: git-credentials-secret
+        optional: true
 
+  # Resource-aware task run specifications
+  taskRunSpecs:
+    - pipelineTaskName: git-clone
+      taskServiceAccountName: pipeline-sa
+      computeResources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
 
-  # Pipeline execution configuration
+    - pipelineTaskName: build-and-push
+      taskServiceAccountName: pipeline-sa
+      computeResources:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+
+  # Timeout configuration
   timeouts:
-    pipeline: "1h0m0s"
-    tasks: "30m0s"
-    finally: "5m0s"
+    pipeline: "30m"
+    tasks: "20m"
+    finally: "5m"
 
+  # Pod template for additional resource control
   podTemplate:
     securityContext:
       runAsNonRoot: true
@@ -69,46 +94,15 @@ spec:
     nodeSelector:
       kubernetes.io/arch: amd64
     tolerations:
-      - key: "tekton"
-        operator: "Equal"
-        value: "true"
+      - key: "node.kubernetes.io/memory-pressure"
+        operator: "Exists"
         effect: "NoSchedule"
     affinity:
       nodeAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
+          - weight: 100
             preference:
               matchExpressions:
                 - key: "node-type"
-                  operator: In
-                  values: ["ci"]
-
-  # Resource limits
-  taskRunSpecs:
-    - pipelineTaskName: git-clone
-      taskPodTemplate:
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
-    # - pipelineTaskName: test
-    #   taskPodTemplate:
-    #     resources:
-    #       requests:
-    #         memory: "512Mi"
-    #         cpu: "500m"
-    #       limits:
-    #         memory: "2Gi"
-    #         cpu: "1000m"
-    - pipelineTaskName: build-and-push
-      taskPodTemplate:
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "4Gi"
-            cpu: "2000m"
+                  operator: "In"
+                  values: ["worker"]
