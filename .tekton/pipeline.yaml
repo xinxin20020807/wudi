@@ -91,8 +91,6 @@ spec:
     - name: git-clone
       taskRef:
         name: git-clone
-        namespace: pipelines-as-code
-        kind: Task
       params:
         - name: url
           value: $(params.git-url)
@@ -112,11 +110,8 @@ spec:
     - name: test
       taskRef:
         name: run-tests
-        namespace: pipelines-as-code
-        kind: Task
-      runAfter:
-        - git-clone
-
+        # 删除这行: namespace: pipelines-as-code
+        # 删除这行: kind: Task
       runAfter:
         - git-clone
       params:
@@ -138,8 +133,8 @@ spec:
     - name: build-and-push
       taskRef:
         name: kaniko-build
-        namespace: pipelines-as-code
-        kind: Task
+        # 删除这行: namespace: pipelines-as-code
+        # 删除这行: kind: Task
       runAfter:
         - test
       params:
