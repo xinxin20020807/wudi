@@ -42,15 +42,27 @@ spec:
         - --context=$(workspaces.source.path)/$(params.CONTEXT)
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --no-push
         - --cache=false
+      env:
+        - name: DOCKER_CONFIG
+          value: /kaniko/.docker
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
       securityContext:
         runAsUser: 0
         runAsGroup: 0
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "50m"
+          memory: 1Gi
+          cpu: 500m
         limits:
-          memory: "512Mi"
-          cpu: "200m"
+          memory: 2Gi
+          cpu: 1000m
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: docker-registry-secret
+        items:
+          - key: .dockerconfigjson
+            path: config.json
