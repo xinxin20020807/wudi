@@ -79,30 +79,13 @@ spec:
           memory: "2Gi"
           cpu: "1000m"
 
-  # Timeout configuration
   timeouts:
     pipeline: "30m"
     tasks: "20m"
     finally: "5m"
 
-  # Pod template for additional resource control
   podTemplate:
     securityContext:
       runAsNonRoot: true
       runAsUser: 65532
       fsGroup: 65532
-    nodeSelector:
-      kubernetes.io/arch: amd64
-    tolerations:
-      - key: "node.kubernetes.io/memory-pressure"
-        operator: "Exists"
-        effect: "NoSchedule"
-    affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            preference:
-              matchExpressions:
-                - key: "node-type"
-                  operator: "In"
-                  values: ["worker"]

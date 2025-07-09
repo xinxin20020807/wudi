@@ -113,11 +113,11 @@ spec:
         runAsGroup: 0
       resources:
         requests:
-          memory: "512Mi"
-          cpu: "250m"
+          memory: "256Mi"  # Further reduced for minimal environments
+          cpu: "100m"      # Minimal CPU request
         limits:
-          memory: "2Gi"
-          cpu: "1000m"
+          memory: "1Gi"    # Conservative limit
+          cpu: "500m"      # Conservative CPU limit
       volumeMounts:
         - name: kaniko-cache
           mountPath: /cache
@@ -125,4 +125,4 @@ spec:
   volumes:
     - name: kaniko-cache
       emptyDir:
-        sizeLimit: 2Gi
+        sizeLimit: 1Gi  # Minimal cache size for constrained environments
