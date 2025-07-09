@@ -1,35 +1,47 @@
-# Optimized PipelineRun for resource-constrained environments
+# PipelineRun with Pipelines as Code annotations
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: ci-pipeline-run-optimized
+  name: ci-pipeline-run-pac
   namespace: pipelines-as-code
   labels:
     app.kubernetes.io/name: ci-pipeline-run
     app.kubernetes.io/version: "1.0.0"
   annotations:
+    # Pipelines as Code annotations for GitHub integration
+    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main, master]"
+    pipelinesascode.tekton.dev/on-source-branch: "[main, master, feature/*]"
+    pipelinesascode.tekton.dev/max-keep-runs: "5"
+    pipelinesascode.tekton.dev/task-timeout: "20m"
+    pipelinesascode.tekton.dev/pipeline-timeout: "30m"
+
+    # Git status reporting
     tekton.dev/git-status: "true"
-    tekton.dev/git-url: "https://github.com/your-org/your-repo"
+
+    # Optional: Custom annotations for better organization
+    description: "CI/CD pipeline for wudi application with Pipelines as Code"
+    version: "1.0.0"
 spec:
   pipelineRef:
     name: ci-pipeline
 
-  # Optimized parameters for smaller resource footprint
+  # Parameters with dynamic values from Pipelines as Code
   params:
     - name: git-url
-      value: "https://github.com/your-org/your-repo.git"
+      value: "{{ repo_url }}"
     - name: git-revision
-      value: "main"
+      value: "{{ revision }}"
     - name: app-name
       value: "wudi-app"
     - name: app-version
-      value: "v1.0.0"
+      value: "{{ revision }}"
     - name: image-registry
       value: "uhub.service.ucloud.cn/base-images"
     - name: image-repository
       value: "wudi-app"
     - name: image-tag
-      value: "latest"
+      value: "{{ revision }}"
     - name: dockerfile-path
       value: "./Dockerfile"
     - name: context-path
@@ -49,7 +61,7 @@ spec:
 
     - name: docker-credentials
       secret:
-        secretName: docker-registry-secret
+        secretName: docker-credentials
         optional: true
 
     - name: git-credentials
@@ -57,35 +69,46 @@ spec:
         secretName: git-credentials-secret
         optional: true
 
-  # Resource-aware task run specifications
+  # Resource-aware task run specifications (optimized for minimal resources)
   taskRunSpecs:
     - pipelineTaskName: git-clone
       taskServiceAccountName: pipeline-sa
       computeResources:
         requests:
+          memory: "64Mi"   # Minimal memory for git clone
+          cpu: "50m"       # Minimal CPU for git clone
+        limits:
           memory: "128Mi"
           cpu: "100m"
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
 
     - pipelineTaskName: build-and-push
       taskServiceAccountName: pipeline-sa
       computeResources:
         requests:
-          memory: "512Mi"
-          cpu: "250m"
+          memory: "256Mi"  # Reduced memory for kaniko
+          cpu: "100m"      # Reduced CPU for kaniko
         limits:
-          memory: "2Gi"
-          cpu: "1000m"
+          memory: "1Gi"    # Reduced memory limit
+          cpu: "500m"      # Reduced CPU limit
 
+  # Aggressive timeouts for faster feedback
   timeouts:
     pipeline: "30m"
     tasks: "20m"
     finally: "5m"
 
+  # Security context
   podTemplate:
     securityContext:
       runAsNonRoot: true
       runAsUser: 65532
       fsGroup: 65532
+    # Optional: Node selector for specific nodes
+    # nodeSelector:
+    #   kubernetes.io/arch: amd64
+    # Tolerations for resource-constrained nodes
+    # tolerations:
+    # - key: "resource-constrained"
+    #   operator: "Equal"
+    #   value: "true"
+    #   effect: "NoSchedule"
