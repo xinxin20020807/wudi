@@ -62,7 +62,7 @@ spec:
     - name: docker-credentials
       secret:
         secretName: docker-credentials
-        optional: true
+        optional: false
 
   taskRunSpecs:
     - pipelineTaskName: git-clone
@@ -95,6 +95,6 @@ spec:
   # Security context
   podTemplate:
     securityContext:
-      runAsNonRoot: true
-      runAsUser: 65532
-      fsGroup: 65532
+      runAsNonRoot: false
+      runAsUser: 0
+      fsGroup: 0

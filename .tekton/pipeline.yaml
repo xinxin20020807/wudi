@@ -43,10 +43,11 @@ spec:
     - name: image-registry
       type: string
       description: Container registry URL
-      default: "uhub.service.ucloud.cn/base-images"
+      default: "uhub.service.ucloud.cn"  # 移除base-images
     - name: image-repository
       type: string
       description: Container image repository
+      default: "base-images/wudi-app"  # 合并路径
     - name: image-tag
       type: string
       description: Container image tag
@@ -114,16 +115,3 @@ spec:
       params:
         - name: IMAGE
           value: $(params.image-registry)/$(params.app-name):$(params.git-revision)
-        - name: DOCKERFILE
-          value: $(params.dockerfile-path)
-        - name: CONTEXT
-          value: $(params.context-path)
-        - name: EXTRA_ARGS
-          value: "--build-arg=APP_NAME=$(params.app-name) --build-arg=APP_VERSION=$(params.app-version) --build-arg=GIT_COMMIT=$(tasks.git-clone.results.commit) --label=org.opencontainers.image.source=$(params.git-url) --label=org.opencontainers.image.revision=$(tasks.git-clone.results.commit) --skip-tls-verify --insecure"
-        - name: BUILDER_IMAGE
-          value: "uhub.service.ucloud.cn/base-images/executor:v1.9.0-debug"
-      workspaces:
-        - name: source
-          workspace: shared-data
-        - name: dockerconfig
-          workspace: docker-credentials
