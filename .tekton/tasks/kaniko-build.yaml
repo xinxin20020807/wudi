@@ -7,30 +7,18 @@ metadata:
 spec:
   description: |
     Builds and pushes a container image using Kaniko.
-
   params:
-    - name: IMAGE
-      description: Name of the image to build
-      type: string
-    - name: DOCKERFILE
-      description: Path to the Dockerfile
-      type: string
-      default: "./Dockerfile"
-    - name: CONTEXT
-      description: The build context
-      type: string
-      default: "./"
-
+    - name: dockerfile
+      description: The path to the dockerfile to build (relative to the context)
+      default: Dockerfile
+    - name: image-url
+      description: Url of image repository
+    - name: image-tag
+      description: Tag to apply to the built image
+      default: latest
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
-
-  results:
-    - name: IMAGE_DIGEST
-      description: Digest of the image just built
-    - name: IMAGE_URL
-      description: URL of the image just built
-
   steps:
     - name: build-and-push
       workingDir: $(workspaces.source.path)
@@ -39,11 +27,13 @@ spec:
         - /kaniko/executor
       args:
         - --dockerfile=$(params.DOCKERFILE)
-        - --context=$(workspaces.source.path)/$(params.CONTEXT)
-        - --destination=$(params.IMAGE)
-        - --destination=$(params.IMAGE)
-        - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --cache=false
+        - --context=$(workspaces.source.path)/source
+        - --destination=$(params.image-url):$(params.image-tag)
+        - --insecure
+        - --insecure-pull
+        - --skip-tls-verify
+        - --skip-tls-verify-pull
+        - --skip-push-permission-check
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
