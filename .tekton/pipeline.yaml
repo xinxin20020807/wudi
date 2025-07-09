@@ -16,9 +16,13 @@ spec:
       type: string
       description: Git revision to checkout
       default: "main"
-    - name: image
+    - name: image-url
       type: string
-      description: Container image name
+      description: Container image repository URL
+    - name: image-tag
+      type: string
+      description: Container image tag
+      default: latest
 
   workspaces:
     - name: shared-data
@@ -46,5 +50,7 @@ spec:
         - name: source
           workspace: shared-data
       params:
-        - name: image
-          value: $(params.image)
+        - name: image-url
+          value: $(params.image-url)
+        - name: image-tag
+          value: $(params.image-tag)

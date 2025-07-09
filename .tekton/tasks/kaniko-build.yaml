@@ -29,11 +29,6 @@ spec:
         - --dockerfile=$(params.dockerfile)
         - --context=$(workspaces.source.path)
         - --destination=$(params.image-url):$(params.image-tag)
-        - --insecure
-        - --insecure-pull
-        - --skip-tls-verify
-        - --skip-tls-verify-pull
-        - --skip-push-permission-check
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker

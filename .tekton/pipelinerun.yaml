@@ -21,8 +21,10 @@ spec:
       value: "https://github.com/xinxin20020807/wudi"
     - name: git-revision
       value: "main"
-    - name: image
-      value: "uhub.service.ucloud.cn/base-images/wudi-app:latest"
+    - name: image-url
+      value: "uhub.service.ucloud.cn/base-images/wudi-app"
+    - name: image-tag
+      value: "latest"
 
   workspaces:
     - name: shared-data
