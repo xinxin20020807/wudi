@@ -6,7 +6,7 @@ metadata:
   namespace: pipelines-as-code
 spec:
   description: |
-    Simple kaniko build task without push
+    Builds and pushes a container image using Kaniko.
 
   params:
     - name: IMAGE
@@ -40,6 +40,7 @@ spec:
       args:
         - --dockerfile=$(params.DOCKERFILE)
         - --context=$(workspaces.source.path)/$(params.CONTEXT)
+        - --destination=$(params.IMAGE)
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)
         - --cache=false
