@@ -109,8 +109,10 @@ spec:
         echo "Digest: ${IMAGE_DIGEST}"
         echo "Size: ${IMAGE_SIZE}"
       securityContext:
-        runAsUser: 0
-        runAsGroup: 0
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       resources:
         requests:
           memory: "256Mi"  # Further reduced for minimal environments
