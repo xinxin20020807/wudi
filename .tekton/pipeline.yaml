@@ -114,4 +114,4 @@ spec:
           workspace: docker-credentials
       params:
         - name: IMAGE
-          value: $(params.image-registry)/$(params.app-name):$(params.git-revision)
+          value: $(params.image-registry)/$(params.image-repository):$(params.git-revision)

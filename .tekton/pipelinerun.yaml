@@ -37,9 +37,9 @@ spec:
     - name: app-version
       value: "{{ revision }}"
     - name: image-registry
-      value: "uhub.service.ucloud.cn/base-images"
+      value: "uhub.service.ucloud.cn"
     - name: image-repository
-      value: "wudi-app"
+      value: "base-images/wudi-app"
     - name: image-tag
       value: "{{ revision }}"
     - name: dockerfile-path
@@ -89,10 +89,8 @@ spec:
     tasks: "20m"
     finally: "5m"
 
-  # Service account for authentication
-  serviceAccountName: default
 
-  # Security context - 完全移除限制
+
   podTemplate:
     securityContext:
       runAsNonRoot: false
