@@ -76,6 +76,7 @@ spec:
         - --use-new-run
         - --skip-tls-verify
         - --insecure
+        - --no-push
         - $(params.EXTRA_ARGS)
       securityContext:
         privileged: true
