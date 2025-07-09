@@ -18,7 +18,7 @@ metadata:
 spec:
   pipelineRef:
     name: ci-pipeline
-    namespace: repo-pipelines
+    namespace: pipelines-as-code
   params:
     # Git parameters (automatically filled by Pipeline as Code)
     - name: git-url

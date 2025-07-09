@@ -3,7 +3,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: ci-pipeline
-  namespace: repo-pipelines
+  namespace: pipelines-as-code
   labels:
     app.kubernetes.io/name: ci-pipeline
     app.kubernetes.io/version: "1.0.0"
@@ -88,14 +88,15 @@ spec:
       value: $(tasks.test.results.test-results)
 
   tasks:
-    # 1. Clone source code
-    - name: git-clone
-      taskRef:
-        name: git-clone
-        namespace: repo-pipelines  # 使用日志中显示的命名空间
-      params:
-        - name: url
-          value: $(params.git-url)
+    tasks:
+      # 1. Clone source code
+      - name: git-clone
+        taskRef:
+          name: git-clone
+
+        params:
+          - name: url
+            value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
         - name: deleteExisting
@@ -107,12 +108,10 @@ spec:
           workspace: shared-data
         - name: ssh-directory
           workspace: git-credentials
-
-    # 2. Run tests
     - name: test
       taskRef:
         name: run-tests
-        namespace: repo-pipelines
+
       runAfter:
         - git-clone
       params:
@@ -134,7 +133,6 @@ spec:
     - name: build-and-push
       taskRef:
         name: kaniko-build
-        namespace: repo-pipelines
       runAfter:
         - test
       params:
