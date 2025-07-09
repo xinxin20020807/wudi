@@ -96,6 +96,8 @@ spec:
           value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
+        - name: sslVerify
+          value: "false"  # 临时禁用 SSL 验证进行测试
 
     # 注释掉test任务
     # - name: test
