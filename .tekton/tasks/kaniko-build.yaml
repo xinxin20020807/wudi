@@ -64,7 +64,7 @@ spec:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
       script: |
-        #!/busybox/sh
+        #!/bin/sh
         set -e
 
         # Log build start
