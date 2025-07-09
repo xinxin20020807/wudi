@@ -179,7 +179,7 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -eu
-        
+
         if [ "${PARAM_VERBOSE}" = "true" ] ; then
           set -x
         fi
@@ -230,6 +230,8 @@ spec:
         test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
 
         git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
+        # 清理URL中的反引号和多余引号
+        PARAM_URL=$(echo "${PARAM_URL}" | sed -e "s/^['\`]//" -e "s/['\`]$//")
         /ko-app/git-init \
           -url="${PARAM_URL}" \
           -revision="${PARAM_REVISION}" \
