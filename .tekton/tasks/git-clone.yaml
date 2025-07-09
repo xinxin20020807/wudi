@@ -31,9 +31,7 @@ spec:
     - name: clone
       image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
       workingDir: $(workspaces.output.path)
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
+
       env:
         - name: HOME
           value: /home/git
