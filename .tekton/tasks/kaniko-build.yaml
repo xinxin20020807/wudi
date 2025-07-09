@@ -62,7 +62,7 @@ spec:
   volumes:
     - name: docker-config
       secret:
-        secretName: docker-registry-secret
+        secretName: docker-credentials
         items:
           - key: .dockerconfigjson
             path: config.json
