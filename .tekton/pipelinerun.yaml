@@ -32,9 +32,9 @@ spec:
 
     # Container registry configuration
     - name: image-registry
-      value: "docker.io"  # Change to your image registry
+      value: "uhub.service.ucloud.cn"  # Change to your image registry
     - name: image-repository
-      value: "myorg/my-app"  # Change to your image repository path
+      value: "wudi1111/fastapi"  # Change to your image repository path
     - name: image-tag
       value: "{{ revision }}"
 

@@ -38,7 +38,7 @@ spec:
     - name: BUILDER_IMAGE
       description: The image on which builds will run
       type: string
-      default: "gcr.io/kaniko-project/executor:v1.9.0"
+      default: "uhub.service.ucloud.cn/base-images/executor:v1.9.0"
 
   workspaces:
     - name: source

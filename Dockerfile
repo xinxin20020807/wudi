@@ -1,5 +1,5 @@
 # Multi-stage build for Python application
-FROM python:3.11-slim as builder
+FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as builder
 
 # Set build arguments
 ARG APP_NAME=wudi
@@ -31,7 +31,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Production stage
-FROM python:3.11-slim as production
+FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as production
 
 # Set build arguments
 ARG APP_NAME=wudi
