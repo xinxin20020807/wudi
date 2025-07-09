@@ -95,6 +95,9 @@ spec:
     tasks: "20m"
     finally: "5m"
 
+  # Service account for authentication
+  serviceAccountName: kaniko-sa
+
   # Security context
   podTemplate:
     securityContext:
