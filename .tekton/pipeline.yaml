@@ -88,13 +88,10 @@ spec:
       value: $(tasks.test.results.test-results)
 
   tasks:
-    tasks:
-      # 1. Clone source code
-      - name: git-clone
-        taskRef:
-          name: git-clone
-
-        params:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+      params:
         - name: url
           value: $(params.git-url)
         - name: revision
@@ -108,9 +105,13 @@ spec:
           workspace: shared-data
         - name: ssh-directory
           workspace: git-credentials
+
+    # 2. Run tests
     - name: test
       taskRef:
         name: run-tests
+      runAfter:
+        - git-clone
 
       runAfter:
         - git-clone
