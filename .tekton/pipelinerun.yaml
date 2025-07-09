@@ -1,13 +1,13 @@
-# Simplified PipelineRun
+# PipelineRun
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: ci-pipeline-run-simple
+  name: ci-pipeline-run
   namespace: pipelines-as-code
-  generateName: ci-pipeline-run-simple-
+  generateName: ci-pipeline-run-
 spec:
   pipelineRef:
-    name: ci-pipeline-simple
+    name: ci-pipeline
 
   params:
     - name: git-url

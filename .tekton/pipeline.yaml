@@ -1,8 +1,8 @@
-# Simplified CI Pipeline
+# CI Pipeline
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ci-pipeline-simple
+  name: ci-pipeline
   namespace: pipelines-as-code
 spec:
   description: |
@@ -28,7 +28,7 @@ spec:
   tasks:
     - name: git-clone
       taskRef:
-        name: git-clone-simple
+        name: git-clone
       workspaces:
         - name: output
           workspace: shared-data
@@ -40,7 +40,7 @@ spec:
 
     - name: build-and-push
       taskRef:
-        name: kaniko-build-simple
+        name: kaniko-build
       runAfter:
         - git-clone
       workspaces:
