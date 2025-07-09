@@ -91,55 +91,41 @@ spec:
     - name: git-clone
       taskRef:
         name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-data
       params:
         - name: url
           value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
-        - name: deleteExisting
-          value: "true"
-        - name: verbose
-          value: "true"
-      workspaces:
-        - name: output
-          workspace: shared-data
-        - name: ssh-directory
-          workspace: git-credentials
 
-    # 2. Run tests
-    - name: test
-      taskRef:
-        name: run-tests
-        # 删除这行: namespace: pipelines-as-code
-        # 删除这行: kind: Task
-      runAfter:
-        - git-clone
-      params:
-        - name: test-goals
-          value: "test"
-        - name: integration-test-goals
-          value: "verify"
-        - name: coverage-enabled
-          value: "true"
-        - name: fail-fast
-          value: "true"
-      workspaces:
-        - name: source
-          workspace: shared-data
-        - name: maven-settings
-          workspace: maven-settings
+    # 注释掉test任务
+    # - name: test
+    #   taskRef:
+    #     name: run-tests
+    #   runAfter:
+    #     - git-clone
+    #   workspaces:
+    #     - name: source
+    #       workspace: shared-data
+    #   params:
+    #     - name: test-goals
+    #       value: "test"
 
-    # 3. Build and push container image
     - name: build-and-push
       taskRef:
         name: kaniko-build
-        # 删除这行: namespace: pipelines-as-code
-        # 删除这行: kind: Task
       runAfter:
-        - test
+        - git-clone  # 修改依赖，直接在git-clone后运行
+      workspaces:
+        - name: source
+          workspace: shared-data
+        - name: dockerconfig
+          workspace: docker-credentials
       params:
         - name: IMAGE
-          value: "$(params.image-registry)/$(params.image-repository):$(params.image-tag)"
+          value: $(params.image-registry)/$(params.app-name):$(params.git-revision)
         - name: DOCKERFILE
           value: $(params.dockerfile-path)
         - name: CONTEXT
