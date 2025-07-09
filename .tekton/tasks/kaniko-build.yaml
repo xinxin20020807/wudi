@@ -76,10 +76,6 @@ spec:
         - --use-new-run
         - $(params.EXTRA_ARGS)
       securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
         runAsUser: 0
         runAsGroup: 0
       resources:
