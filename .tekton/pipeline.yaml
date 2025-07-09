@@ -83,9 +83,6 @@ spec:
     - name: git-commit
       description: Git commit SHA
       value: $(tasks.git-clone.results.commit)
-    - name: test-results
-      description: Test execution results
-      value: $(tasks.test.results.test-results)
 
   tasks:
     - name: git-clone

@@ -60,17 +60,6 @@ spec:
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)
-      args:
-        - $(params.EXTRA_ARGS)
-        - --dockerfile=$(params.DOCKERFILE)
-        - --context=$(workspaces.source.path)/$(params.CONTEXT)
-        - --destination=$(params.IMAGE)
-        - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --cache=true
-        - --cache-dir=/cache
-        - --compressed-caching=false
-        - --snapshot-mode=redo
-        - --use-new-run
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
