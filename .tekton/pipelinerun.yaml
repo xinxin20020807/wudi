@@ -21,7 +21,7 @@ spec:
       value: "https://github.com/xinxin20020807/wudi"
     - name: git-revision
       value: "main"
-    - name: image-name
+    - name: image
       value: "uhub.service.ucloud.cn/base-images/wudi-app:latest"
 
   workspaces:
@@ -39,9 +39,6 @@ spec:
   timeouts:
     pipeline: "10m"
     tasks: "5m"
-
-  # 使用默认服务账户
-  serviceAccountName: default
 
   # 简化的安全上下文
   podTemplate:

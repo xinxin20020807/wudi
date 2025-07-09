@@ -26,8 +26,8 @@ spec:
       command:
         - /kaniko/executor
       args:
-        - --dockerfile=$(params.DOCKERFILE)
-        - --context=$(workspaces.source.path)/source
+        - --dockerfile=$(params.dockerfile)
+        - --context=$(workspaces.source.path)
         - --destination=$(params.image-url):$(params.image-tag)
         - --insecure
         - --insecure-pull

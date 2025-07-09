@@ -37,25 +37,10 @@ spec:
       image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
       workingDir: $(workspaces.output.path)
       script: |
-            #!/bin/sh
-            set -ex
-            # Install diagnostic tools
-            apk add --no-cache curl bind-tools
-
-            # --- Start Network Diagnostics ---
-            echo "--- Checking DNS resolution for github.com ---"
-            dig github.com
-
-            echo "--- Checking network connectivity to github.com with curl ---"
-            curl -v https://github.com
-
-            echo "--- Checking Git global config ---"
-            git config --global --list
-            # --- End Network Diagnostics ---
-
-            echo "--- Starting git clone --- "
-            git clone "$(params.url)" .
-            git checkout "$(params.revision)"
-            COMMIT_SHA=$(git rev-parse HEAD)
-            echo -n "$COMMIT_SHA" > "$(results.commit.path)"
-            echo -n "$(params.url)" > "$(results.url.path)"
+        #!/bin/sh
+        set -ex
+        git clone "$(params.url)" .
+        git checkout "$(params.revision)"
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo -n "$COMMIT_SHA" > "$(results.commit.path)"
+        echo -n "$(params.url)" > "$(results.url.path)"
