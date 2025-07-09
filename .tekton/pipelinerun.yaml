@@ -4,6 +4,7 @@ apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   name: ci-pipeline-run
+  namespace: repo-pipelines
   annotations:
     # Pipeline as Code annotations
     pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
@@ -17,6 +18,7 @@ metadata:
 spec:
   pipelineRef:
     name: ci-pipeline
+    namespace: repo-pipelines
   params:
     # Git parameters (automatically filled by Pipeline as Code)
     - name: git-url
