@@ -33,7 +33,7 @@ ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 # Install dependencies using uv
 RUN uv sync --frozen --no-dev --no-cache
 
-# Production stage
+# Production stage#
 FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as production
 
 # Set build arguments
