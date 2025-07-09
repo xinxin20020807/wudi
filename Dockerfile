@@ -19,8 +19,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv for faster Python package management
-RUN pip install uv
+
 
 # Set work directory
 WORKDIR /app
@@ -32,7 +31,7 @@ COPY pyproject.toml uv.lock ./
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install dependencies using uv
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-cache
 
 # Production stage
 FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as production
