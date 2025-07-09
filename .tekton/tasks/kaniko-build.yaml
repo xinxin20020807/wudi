@@ -63,50 +63,18 @@ spec:
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
-      script: |
-        #!/bin/sh
-        set -e
-
-        # Log build start
-        echo "Starting Kaniko build..."
-        echo "Image: $(params.IMAGE)"
-        echo "Dockerfile: $(params.DOCKERFILE)"
-        echo "Context: $(params.CONTEXT)"
-
-        # Execute kaniko build
-        /kaniko/executor \
-          --dockerfile=$(params.DOCKERFILE) \
-          --context=$(workspaces.source.path)/$(params.CONTEXT) \
-          --destination=$(params.IMAGE) \
-          --digest-file=$(results.IMAGE_DIGEST.path) \
-          --cache=true \
-          --cache-dir=/cache \
-          --compressed-caching=false \
-          --use-new-run \
-          $(params.EXTRA_ARGS) 2>&1 | tee /tmp/kaniko.log
-
-        # Extract image digest and size from logs
-        if [ -f $(results.IMAGE_DIGEST.path) ]; then
-          IMAGE_DIGEST=$(cat $(results.IMAGE_DIGEST.path))
-        else
-          IMAGE_DIGEST=$(grep "digest:" /tmp/kaniko.log | tail -1 | sed 's/.*digest: //' | tr -d '\r\n')
-        fi
-
-        if grep -q "Pushed" /tmp/kaniko.log; then
-          IMAGE_SIZE=$(grep "Pushed" /tmp/kaniko.log | grep -o '[0-9.]*[KMGT]B' | tail -1 || echo "unknown")
-        else
-          IMAGE_SIZE="unknown"
-        fi
-
-        # Save results
-        echo "${IMAGE_DIGEST}" > $(results.IMAGE_DIGEST.path)
-        echo "$(params.IMAGE)" > $(results.IMAGE_URL.path)
-        echo "${IMAGE_SIZE}" > $(results.IMAGE_SIZE.path)
-
-        echo "Build completed successfully"
-        echo "Image: $(params.IMAGE)"
-        echo "Digest: ${IMAGE_DIGEST}"
-        echo "Size: ${IMAGE_SIZE}"
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(params.DOCKERFILE)
+        - --context=$(workspaces.source.path)/$(params.CONTEXT)
+        - --destination=$(params.IMAGE)
+        - --digest-file=$(results.IMAGE_DIGEST.path)
+        - --cache=true
+        - --cache-dir=/cache
+        - --compressed-caching=false
+        - --use-new-run
+        - $(params.EXTRA_ARGS)
       securityContext:
         allowPrivilegeEscalation: false
         capabilities:
