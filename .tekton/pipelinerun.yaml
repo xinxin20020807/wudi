@@ -9,7 +9,10 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "pull_request" && source_branch.matches("feat/.*") && target_branch == "main"
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
-    pipelinesascode.tekton.dev/max-keep-runs: "5"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+  labels:
+    app.kubernetes.io/name: "wudi-ci"
+    tekton.dev/pipeline: "ci-pipeline"
 
 spec:
   pipelineRef:
