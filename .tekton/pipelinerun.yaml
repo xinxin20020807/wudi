@@ -7,8 +7,7 @@ metadata:
   annotations:
     # Pipelines as Code annotations for GitHub integration
     pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "pull_request.opened" && source_branch.matches("feat/.*")
-      pipelinesascode.tekton.dev/on-target-branch: "[main]"
+      event == "pull_request" && source_branch.matches("feat/.*") && target_branch == "main"
     pipelinesascode.tekton.dev/on-comment: "^/rerun"
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "5"
