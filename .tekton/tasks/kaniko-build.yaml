@@ -29,6 +29,8 @@ spec:
         - --dockerfile=$(params.dockerfile)
         - --context=$(workspaces.source.path)
         - --destination=$(params.image-url):$(params.image-tag)
+        - --cleanup
+        - --reproducible
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker
