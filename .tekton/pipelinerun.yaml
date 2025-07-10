@@ -5,10 +5,10 @@ metadata:
   namespace: pipelines-as-code
   generateName: ci-pipeline-run-
   annotations:
-    # Pipelines as Code annotations for GitHub integration
-    pipelinesascode.tekton.dev/on-event: "[pull_request]"
-    pipelinesascode.tekton.dev/on-target-branch: "[main]"
-    pipelinesascode.tekton.dev/on-source-branch: "[feat/*,fix/*]"
+    pipelinesascode.tekton.dev/on-comment: "/retest"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "pull_request" && source_branch.matches("feat/.*") && target_branch == "main"
+    pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "5"
     pipelinesascode.tekton.dev/task-timeout: "10m"
     pipelinesascode.tekton.dev/pipeline-timeout: "15m"
