@@ -5,7 +5,7 @@ metadata:
   namespace: pipelines-as-code
   generateName: ci-pipeline-run-
   annotations:
-    pipelinesascode.tekton.dev/on-comment: "/retest"
+    pipelinesascode.tekton.dev/retest-comment: "true"
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "pull_request" && source_branch.matches("feat/.*") && target_branch == "main"
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
