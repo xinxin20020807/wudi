@@ -6,11 +6,12 @@ metadata:
   generateName: ci-pipeline-run-
   annotations:
     # Pipelines as Code annotations for GitHub integration
-    pipelinesascode.tekton.dev/on-event: "[pull_request]"
+    pipelinesascode.tekton.dev/on-event: "[pull_request.opened, issue_comment]"
     pipelinesascode.tekton.dev/on-target-branch: "[main]"
     pipelinesascode.tekton.dev/on-source-branch: "[feat/*,fix/*]"
-    pipelinesascode.tekton.dev/on-comment-regex: "^/rerun"
+    pipelinesascode.tekton.dev/on-comment-command: "/rerun"
     pipelinesascode.tekton.dev/on-comment-message: "流水线已重新触发 🚀"
+    pipelinesascode.tekton.dev/debug: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "5"
     pipelinesascode.tekton.dev/task-timeout: "10m"
     pipelinesascode.tekton.dev/pipeline-timeout: "15m"
