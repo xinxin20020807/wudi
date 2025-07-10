@@ -18,13 +18,13 @@ spec:
 
   params:
     - name: git-url
-      value: "{{repo_url}}"
+      value: "https://github.com/xinxin20020807/wudi"
     - name: git-revision
-      value: "{{revision}}"
+      value: "main"
     - name: image-url
       value: "uhub.service.ucloud.cn/base-images/wudi-app"
     - name: image-tag
-      value: "{{short_sha}}"
+      value: "latest"
 
   workspaces:
     - name: shared-data
