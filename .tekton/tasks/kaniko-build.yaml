@@ -31,9 +31,9 @@ spec:
         - --destination=$(params.image-url):$(params.image-tag)
         - --cleanup
         - --reproducible
-        - --cache=true
-        - --cache-ttl=24h
-        - --build-arg=BUILDKIT_INLINE_CACHE=1
+        - --cache=false
+        - --no-push-cache
+        - --skip-tls-verify
         - --log-format=text
         - --verbosity=info
       env:
