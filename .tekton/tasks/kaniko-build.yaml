@@ -33,7 +33,7 @@ spec:
         echo "\n=== Git status (if available) ==="
         git log --oneline -1 2>/dev/null || echo "Not a git repository"
         echo "=== End debug info ==="
-    
+
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: uhub.service.ucloud.cn/base-images/executor:latest
