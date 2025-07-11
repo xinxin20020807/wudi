@@ -123,7 +123,8 @@ spec:
 
         for attempt in 1 2 3; do
           # Clean workspace before each attempt
-          rm -rf ./* ./.* 2>/dev/null || true
+          echo "Cleaning workspace..."
+          find . -mindepth 1 -delete 2>/dev/null || true
 
           echo "Clone attempt $attempt/3: $CLONE_URL"
 
