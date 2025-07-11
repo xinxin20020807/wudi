@@ -22,7 +22,7 @@ spec:
       script: |
         cd $(workspaces.source.path)
         # Clean workspace if it exists
-        rm -rf .git ./* .[^.]* 2>/dev/null || true
-        # Clone repository
+        rm -rf *
+
         git clone -b $(params.revision) -v $(params.url) .
         ls -la
