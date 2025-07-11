@@ -1,4 +1,4 @@
-# Improved PipelineRun with dynamic tagging
+# PipelineRun with EmptyDir to avoid PVC conflicts
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -26,42 +26,26 @@ spec:
     - name: image-tag
       value: "$(context.pipelineRun.name)-$(context.pipelineRun.uid[0:8])"
 
+  # Use EmptyDir to avoid PVC conflicts
   workspaces:
     - name: shared-data
-      volumeClaimTemplate:
-        spec:
-          storageClassName: ebs-ssd
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 20Gi
+      emptyDir: {}
 
-  # Enhanced timeout settings
+  # Simplified timeout settings
   timeouts:
     pipeline: "30m"
     tasks: "15m"
-    finally: "5m"
 
-  # Enhanced security and resource settings
+  # Simplified pod template
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
-      fsGroup: 0
-    nodeSelector:
-      kubernetes.io/arch: amd64
-    tolerations:
-      - key: "node-role.kubernetes.io/ci"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-    affinity:
-      nodeAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            preference:
-              matchExpressions:
-                - key: "node-type"
-                  operator: In
-                  values: ["ci-optimized"]
+    # Add resource limits to prevent resource exhaustion
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
