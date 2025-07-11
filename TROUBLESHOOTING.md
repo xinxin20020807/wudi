@@ -16,6 +16,7 @@
 2. 使用绝对路径启动应用: `/app/.venv/bin/python main.py`
 3. 在生产阶段重新安装依赖确保完整性
 4. 检查 pyproject.toml 中的依赖配置
+5. 设置正确的文件权限: `chmod -R 755 /app/.venv/bin/`
 
 ### 2. Git Clone 任务卡住
 

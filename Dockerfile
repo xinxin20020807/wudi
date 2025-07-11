@@ -86,6 +86,9 @@ COPY pyproject.toml uv.lock ./
 # Ensure dependencies are properly installed in production
 RUN uv sync --frozen --no-cache --no-dev
 
+# Set correct permissions for virtual environment
+RUN chmod -R 755 /app/.venv/bin/
+
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
 
