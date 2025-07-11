@@ -28,7 +28,7 @@ spec:
     - name: shared-data
       volumeClaimTemplate:
         metadata:
-          name: "workspace-$(context.pipelineRun.name)"
+          name: "workspace-$(context.pipelineRun.uid)"
         spec:
           accessModes:
             - ReadWriteOnce
@@ -77,12 +77,3 @@ spec:
                 - key: "node-type"
                   operator: In
                   values: ["compute"]
-  timeouts:
-    pipeline: "30m"
-    tasks: "15m"
-
-  podTemplate:
-    securityContext:
-      runAsNonRoot: false
-      runAsUser: 0
-      fsGroup: 0
