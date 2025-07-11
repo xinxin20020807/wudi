@@ -17,6 +17,12 @@ def index(request: Request):
     )
 
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint for container monitoring"""
+    return {"status": "healthy", "service": "wudi-app"}
+
+
 #
 ####################
 if __name__ == "__main__":

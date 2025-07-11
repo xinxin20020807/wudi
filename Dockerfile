@@ -34,7 +34,8 @@ RUN pip install uv
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install dependencies using uv
-RUN uv sync --frozen --no-dev --no-cache
+RUN uv sync --frozen --no-dev --no-cache && \
+    uv pip list
 
 # Production stage#
 FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as production
@@ -68,8 +69,10 @@ WORKDIR /app
 # Copy virtual environment from builder stage
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy application code
-COPY . .
+# Copy application code (exclude unnecessary files)
+COPY main.py ./
+COPY templates/ ./templates/
+COPY pyproject.toml uv.lock ./
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
