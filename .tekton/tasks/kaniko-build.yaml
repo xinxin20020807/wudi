@@ -20,9 +20,25 @@ spec:
     - name: source
       description: Holds the context and Dockerfile
   steps:
+    - name: debug-context
+      workingDir: $(workspaces.source.path)
+      image: uhub.service.ucloud.cn/base-images/alpine:latest
+      script: |
+        echo "=== Debug: Checking build context ==="
+        echo "Working directory: $(pwd)"
+        echo "Directory contents:"
+        ls -la
+        echo "\n=== Dockerfile content ==="
+        cat $(params.dockerfile) || echo "Dockerfile not found!"
+        echo "\n=== Git status (if available) ==="
+        git log --oneline -1 2>/dev/null || echo "Not a git repository"
+        echo "=== End debug info ==="
+    
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: uhub.service.ucloud.cn/base-images/executor:latest
+      runAfter:
+        - debug-context
       command:
         - /kaniko/executor
       args:
@@ -33,9 +49,12 @@ spec:
         - --reproducible
         - --cache=false
         - --no-push-cache
+        - --no-cache
+        - --force
         - --skip-tls-verify
         - --log-format=text
         - --verbosity=info
+        - --build-arg=BUILDKIT_INLINE_CACHE=0
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker

@@ -1,4 +1,4 @@
-# PipelineRun
+# Improved PipelineRun with dynamic tagging
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -24,7 +24,7 @@ spec:
     - name: image-url
       value: "uhub.service.ucloud.cn/base-images/wudi-app"
     - name: image-tag
-      value: "latest"
+      value: "$(context.pipelineRun.name)-$(context.pipelineRun.uid[0:8])"
 
   workspaces:
     - name: shared-data
@@ -37,13 +37,31 @@ spec:
             requests:
               storage: 20Gi
 
-  # 简化的超时设置
+  # Enhanced timeout settings
   timeouts:
     pipeline: "30m"
     tasks: "15m"
+    finally: "5m"
 
-  # 简化的安全上下文
+  # Enhanced security and resource settings
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
+      fsGroup: 0
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    tolerations:
+      - key: "node-role.kubernetes.io/ci"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: "node-type"
+                  operator: In
+                  values: ["ci-optimized"]
