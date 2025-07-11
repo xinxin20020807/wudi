@@ -46,9 +46,8 @@ clean:
 run:
 	uv run python main.py
 
-# Build Docker image
-docker-build:
-	docker build -t wudi-app:latest .
+docker-build: ## Build Docker image
+	docker build -t wudi:latest .
 
 # Run Docker container
 docker-run:

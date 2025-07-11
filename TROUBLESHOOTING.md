@@ -12,11 +12,10 @@
 - Python 路径配置错误
 
 **解决方案**:
-1. 确保 Dockerfile 中正确复制虚拟环境
-2. 使用绝对路径启动应用: `/app/.venv/bin/python main.py`
-3. 在生产阶段重新安装依赖确保完整性
-4. 检查 pyproject.toml 中的依赖配置
-5. 设置正确的文件权限: `chmod -R 755 /app/.venv/bin/`
+1. 确保 Dockerfile 中正确安装依赖
+2. 检查虚拟环境 PATH 配置
+3. 验证 pyproject.toml 中的依赖配置
+4. 重新构建 Docker 镜像
 
 ### 2. Git Clone 任务卡住
 
