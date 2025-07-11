@@ -28,7 +28,7 @@ spec:
     - name: shared-data
       volumeClaimTemplate:
         metadata:
-          name: "workspace-$(context.pipelineRun.uid)"
+          generateName: "workspace-"
         spec:
           accessModes:
             - ReadWriteOnce
