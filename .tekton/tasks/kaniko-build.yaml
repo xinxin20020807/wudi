@@ -22,7 +22,7 @@ spec:
   steps:
     - name: debug-context
       workingDir: $(workspaces.source.path)
-      image: hub.service.ucloud.cn/base-images/alpine:3.18
+      image: uhub.service.ucloud.cn/base-images/alpine:3.18
       script: |
         echo "=== Debug: Checking build context ==="
         echo "Working directory: $(pwd)"
