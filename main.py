@@ -18,7 +18,6 @@ app = FastAPI(
     title=settings.APP_NAME, version=settings.APP_VERSION, debug=settings.DEBUG
 )
 
-# Initialize templates
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 
