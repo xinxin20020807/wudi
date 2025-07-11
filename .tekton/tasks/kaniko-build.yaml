@@ -29,6 +29,13 @@ spec:
         - --dockerfile=$(params.dockerfile)
         - --context=$(workspaces.source.path)
         - --destination=$(params.image-url):$(params.image-tag)
+        - --cleanup
+        - --reproducible
+        - --cache=false
+        - --no-push-cache
+        - --skip-tls-verify
+        - --log-format=text
+        - --verbosity=info
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker

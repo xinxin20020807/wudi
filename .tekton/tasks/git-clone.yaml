@@ -26,23 +26,43 @@ spec:
     - name: cleanup
       image: uhub.service.ucloud.cn/base-images/alpine:3.18
       workingDir: $(workspaces.output.path)
+      timeout: "2m"
+      resources:
+        requests:
+          memory: 64Mi
+          cpu: 100m
+        limits:
+          memory: 128Mi
+          cpu: 200m
       script: |
         #!/bin/sh
         set -e
         echo "Cleaning up workspace directory..."
-        # a safe way to delete contents without deleting the directory itself
-        find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+        rm -rf ./* ./.* 2>/dev/null || true
+        echo "Cleanup completed"
 
     - name: clone
       image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
       workingDir: $(workspaces.output.path)
+      timeout: "10m"
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 200m
+        limits:
+          memory: 256Mi
+          cpu: 500m
       script: |
         #!/bin/sh
         set -ex
+        echo "Starting git clone..."
         git config --global http.version HTTP/1.1
         git config --global http.postBuffer 524288000
-        git clone "$(params.url)" .
+        git config --global http.lowSpeedLimit 1000
+        git config --global http.lowSpeedTime 300
+        git clone --depth 1 "$(params.url)" .
         git checkout "$(params.revision)"
         COMMIT_SHA=$(git rev-parse HEAD)
         echo -n "$COMMIT_SHA" > "$(results.commit.path)"
         echo -n "$(params.url)" > "$(results.url.path)"
+        echo "Git clone completed successfully"

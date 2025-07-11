@@ -1,11 +1,33 @@
 [project]
 name = "wudi"
 version = "0.1.0"
-description = "Add your description here"
+description = "A modern FastAPI web application with GitOps CI/CD"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.116.0",
     "jinja2>=3.1.6",
     "uvicorn>=0.35.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["."]
