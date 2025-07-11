@@ -1,51 +1,118 @@
-# PipelineRun with EmptyDir to avoid PVC conflicts
+# PipelineRun with PVC for data persistence between tasks
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  namespace: pipelines-as-code
   generateName: ci-pipeline-run-
+  namespace: pipelines-as-code
   annotations:
-    pipelinesascode.tekton.dev/on-comment: "/retest"
-    pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "pull_request" && source_branch.matches("feat/.*") && target_branch == "main"
-    pipelinesascode.tekton.dev/cancel-in-progress: "true"
+    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main, master, develop, feat/*]"
     pipelinesascode.tekton.dev/max-keep-runs: "5"
-    pipelinesascode.tekton.dev/task-timeout: "10m"
-    pipelinesascode.tekton.dev/pipeline-timeout: "15m"
+    pipelinesascode.tekton.dev/task-timeout: "15m"
+    pipelinesascode.tekton.dev/pipeline-timeout: "30m"
 spec:
   pipelineRef:
     name: ci-pipeline
-
   params:
     - name: git-url
       value: "https://github.com/xinxin20020807/wudi"
     - name: git-revision
       value: "main"
     - name: image-url
-      value: "uhub.service.ucloud.cn/base-images/wudi-app"
+      value: "uhub.service.ucloud.cn/xinxin-istio/wudi"
     - name: image-tag
       value: "$(context.pipelineRun.name)-$(context.pipelineRun.uid[0:8])"
 
-  # Use EmptyDir to avoid PVC conflicts
+  # Use PVC for persistent data sharing between tasks
   workspaces:
     - name: shared-data
-      emptyDir: {}
+      volumeClaimTemplate:
+        metadata:
+          name: "workspace-$(context.pipelineRun.name)"
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: "ebs-ssd"  # 根据你的集群调整
+          resources:
+            requests:
+              storage: 10Gi
 
-  # Simplified timeout settings
+  # Timeout settings
   timeouts:
     pipeline: "30m"
     tasks: "15m"
 
-  # Simplified pod template
+  # Pod template with security and resource settings
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
-    # Add resource limits to prevent resource exhaustion
+      fsGroup: 0
+    # Resource limits
     resources:
       requests:
         memory: "1Gi"
         cpu: "500m"
+        ephemeral-storage: "5Gi"
       limits:
         memory: "4Gi"
         cpu: "2000m"
+        ephemeral-storage: "10Gi"
+    # Node selection for better performance
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    # Tolerations for dedicated nodes
+    tolerations:
+      - key: "tekton"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    # Affinity for better scheduling
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: "node-type"
+                  operator: In
+                  values: ["compute"]
+---
+# Alternative: Use existing PVC
+# If you have a pre-created PVC, use this configuration instead
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: ci-pipeline-existing-pvc-
+  namespace: pipelines-as-code
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main, master, develop, feat/*]"
+spec:
+  pipelineRef:
+    name: ci-pipeline
+  params:
+    - name: git-url
+      value: "https://github.com/xinxin20020807/wudi"
+    - name: git-revision
+      value: "main"
+    - name: image-url
+      value: "uhub.service.ucloud.cn/xinxin-istio/wudi"
+    - name: image-tag
+      value: "$(context.pipelineRun.name)-$(context.pipelineRun.uid[0:8])"
+
+  # Use existing PVC
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: tekton-shared-workspace  # 预先创建的PVC名称
+
+  timeouts:
+    pipeline: "30m"
+    tasks: "15m"
+
+  podTemplate:
+    securityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      fsGroup: 0
