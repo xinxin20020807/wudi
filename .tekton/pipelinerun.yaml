@@ -77,36 +77,6 @@ spec:
                 - key: "node-type"
                   operator: In
                   values: ["compute"]
----
-# Alternative: Use existing PVC
-# If you have a pre-created PVC, use this configuration instead
-apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
-metadata:
-  generateName: ci-pipeline-existing-pvc-
-  namespace: pipelines-as-code
-  annotations:
-    pipelinesascode.tekton.dev/on-event: "[push, pull_request]"
-    pipelinesascode.tekton.dev/on-target-branch: "[main, master, develop, feat/*]"
-spec:
-  pipelineRef:
-    name: ci-pipeline
-  params:
-    - name: git-url
-      value: "https://github.com/xinxin20020807/wudi"
-    - name: git-revision
-      value: "main"
-    - name: image-url
-      value: "uhub.service.ucloud.cn/xinxin-istio/wudi"
-    - name: image-tag
-      value: "$(context.pipelineRun.name)-$(context.pipelineRun.uid[0:8])"
-
-  # Use existing PVC
-  workspaces:
-    - name: shared-data
-      persistentVolumeClaim:
-        claimName: tekton-shared-workspace  # 预先创建的PVC名称
-
   timeouts:
     pipeline: "30m"
     tasks: "15m"
