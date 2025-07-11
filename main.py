@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from config import settings
-from middleware import LoggingMiddleware, SecurityHeadersMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -21,10 +20,6 @@ app = FastAPI(
 
 # Initialize templates
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
-
-# Add middleware
-app.add_middleware(LoggingMiddleware)
-app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get(

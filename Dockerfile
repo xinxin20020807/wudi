@@ -11,28 +11,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
-RUN pip install uv
+RUN pip install --no-cache-dir uv
 
 # Set work directory
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 
-# Install dependencies
-RUN uv sync --no-cache
+# Install dependencies (使用uv直接安装，无需虚拟环境)
+RUN uv pip install --no-cache -r <(uv pip compile pyproject.toml)
 
 # Copy application code
-COPY main.py config.py middleware.py ./
+COPY main.py config.py ./
 COPY templates/ ./templates/
-
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
-USER appuser
-
-# Add virtual environment to PATH
-ENV PATH="/app/.venv/bin:$PATH"
 
 # Expose port
 EXPOSE 8000
