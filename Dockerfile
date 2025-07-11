@@ -36,7 +36,7 @@ ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
 
 # Install dependencies using uv with retry mechanism
 RUN for i in 1 2 3; do \
-        uv sync --frozen --no-dev --no-cache && break || \
+        uv sync --frozen --no-cache && break || \
         (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
     done && \
     uv pip list
@@ -62,11 +62,12 @@ ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
     UV_RETRIES=3 \
     UV_CONCURRENT_DOWNLOADS=1
 
-# Install runtime dependencies
+# Install runtime dependencies and uv
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
     apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* && \
+    pip install uv
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -81,6 +82,9 @@ COPY --from=builder /app/.venv /app/.venv
 COPY main.py config.py middleware.py ./
 COPY templates/ ./templates/
 COPY pyproject.toml uv.lock ./
+
+# Ensure dependencies are properly installed in production
+RUN uv sync --frozen --no-cache --no-dev
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
@@ -106,4 +110,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["/app/.venv/bin/python", "main.py"]

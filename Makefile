@@ -55,10 +55,19 @@ docker-run:
 	docker run -p 8000:8000 --name wudi-container wudi-app:latest
 
 # Stop and remove Docker container
-docker-stop:
-	docker stop wudi-container || true
-	docker rm wudi-container || true
+docker-stop: ## Stop Docker container
+	docker stop wudi-app || true
+	docker rm wudi-app || true
+
+docker-test: ## Test Docker build and run
+	./test-docker.sh
+
+docker-clean: ## Clean Docker images and containers
+	docker stop wudi-app || true
+	docker rm wudi-app || true
+	docker rmi wudi:latest || true
+	docker rmi wudi-test:latest || true
 
 # Development server with auto-reload
-dev:
-	uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+dev: install-dev ## Start development server with auto-reload
+	uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
