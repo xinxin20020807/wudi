@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from config import settings
 
-# Configure logging
+# Configure logging###
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,7 +46,6 @@ def health_check():
     }
 
 
-#############3##    s
 if __name__ == "__main__":
     import uvicorn
 
