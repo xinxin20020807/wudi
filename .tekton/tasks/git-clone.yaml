@@ -1,156 +1,22 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: git-clone
-  namespace: pipelines-as-code
 spec:
-  description: |
-    Clones a git repository using SSH authentication.
+  description: Clone the code repository to the workspace.
   params:
     - name: url
-      description: Repository URL to clone from.
-    - name: revision
-      description: Revision to checkout. (branch, tag, sha, ref, etc...)
+      type: string
+      description: git url to clone
       default: ""
-
-    - name: depth
-      description: Perform a shallow clone, fetching only the most recent N commits.
-      default: "1"
+    - name: revision
+      type: string
+      description: git branch to checkout
+      default: "main"
   workspaces:
-    - name: output
-      description: The git repo will be cloned onto the volume backing this Workspace.
-    - name: ssh-directory
-      description: A workspace containing SSH keys for git authentication.
-      optional: true
-  results:
-    - name: commit
-      description: The precise commit SHA that was fetched by this Task.
-    - name: url
-      description: The precise URL that was fetched by this Task.
-  stepTemplate:
-    env:
-      - name: HOME
-        value: /home/git
-      - name: PARAM_URL
-        value: $(params.url)
-      - name: PARAM_REVISION
-        value: $(params.revision)
-
-      - name: PARAM_DEPTH
-        value: $(params.depth)
+    - name: source
+      description: The git repo will be cloned onto the volume backing this workspace
   steps:
-    - name: setup-ssh
-      image: uhub.service.ucloud.cn/base-images/alpine:3.18
-
-      script: |
-        #!/bin/sh
-        set -e
-
-        echo "Setting up SSH configuration..."
-
-        # Setup SSH directory with proper permissions
-        mkdir -p $HOME/.ssh
-        chmod 700 $HOME/.ssh
-
-        # Copy SSH keys and setup known_hosts
-        if [ -d "$(workspaces.ssh-directory.path)" ]; then
-          # Copy SSH keys if available
-          [ -f "$(workspaces.ssh-directory.path)/id_ed25519" ] && {
-            cp "$(workspaces.ssh-directory.path)/id_ed25519" "$HOME/.ssh/"
-            chmod 600 "$HOME/.ssh/id_ed25519"
-            echo "SSH private key configured"
-          }
-
-          [ -f "$(workspaces.ssh-directory.path)/id_ed25519.pub" ] && {
-            cp "$(workspaces.ssh-directory.path)/id_ed25519.pub" "$HOME/.ssh/"
-            chmod 644 "$HOME/.ssh/id_ed25519.pub"
-          }
-
-          # Copy or generate known_hosts
-          if [ -f "$(workspaces.ssh-directory.path)/known_hosts" ]; then
-            cp "$(workspaces.ssh-directory.path)/known_hosts" "$HOME/.ssh/"
-          else
-            ssh-keyscan -t rsa,ed25519 github.com gitlab.com >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
-          fi
-        else
-          ssh-keyscan -t rsa,ed25519 github.com gitlab.com >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
-        fi
-
-        chmod 644 "$HOME/.ssh/known_hosts"
-
-        # Start SSH agent if key exists
-        [ -f "$HOME/.ssh/id_ed25519" ] && {
-          eval "$(ssh-agent -s)"
-          ssh-add "$HOME/.ssh/id_ed25519" 2>/dev/null || true
-        }
-
-        echo "SSH configuration completed"
-
-    - name: clone
-      image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
-      workingDir: $(workspaces.output.path)
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
-      script: |
-        #!/usr/bin/env sh
-        set -eu
-
-        echo "Starting git clone..."
-
-        # Configure git
-        git config --global user.name "Tekton Pipeline"
-        git config --global user.email "tekton@pipeline.local"
-
-        # Convert HTTPS URLs to SSH format
-        CLONE_URL="$PARAM_URL"
-        case "$PARAM_URL" in
-          https://github.com/*)
-            CLONE_URL=$(echo "$PARAM_URL" | sed 's|https://github.com/|git@github.com:|')
-            echo "Converted to SSH format: $CLONE_URL"
-            ;;
-          https://gitlab.com/*)
-            CLONE_URL=$(echo "$PARAM_URL" | sed 's|https://gitlab.com/|git@gitlab.com:|')
-            echo "Converted to SSH format: $CLONE_URL"
-            ;;
-          *)
-            echo "Using provided URL: $CLONE_URL"
-            ;;
-        esac
-
-        # Clone with retry logic
-        export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
-
-        for attempt in 1 2 3; do
-          # Clean workspace before each attempt
-          echo "Cleaning workspace..."
-          find . -mindepth 1 -delete 2>/dev/null || true
-
-          echo "Clone attempt $attempt/3: $CLONE_URL"
-
-          if git clone --depth "$PARAM_DEPTH" "$CLONE_URL" .; then
-            echo "Clone successful"
-            break
-          elif [ $attempt -lt 3 ]; then
-            echo "Clone failed, retrying in 10 seconds..."
-            sleep 10
-          else
-            echo "Clone failed after 3 attempts. Check SSH configuration and repository access."
-            exit 1
-          fi
-        done
-
-        # Checkout specific revision if provided
-        [ -n "$PARAM_REVISION" ] && [ "$PARAM_REVISION" != "main" ] && [ "$PARAM_REVISION" != "master" ] && {
-          echo "Checking out revision: $PARAM_REVISION"
-          git fetch origin "$PARAM_REVISION" --depth=1 || git fetch origin
-          git checkout "$PARAM_REVISION"
-        }
-
-        # Output results
-        COMMIT_SHA=$(git rev-parse HEAD)
-        echo "Commit SHA: $COMMIT_SHA"
-        printf "%s" "$COMMIT_SHA" > "$(results.commit.path)"
-        printf "%s" "$PARAM_URL" > "$(results.url.path)"
-
-        echo "Git clone completed successfully"
+    - name: git-clone
+      image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
+      script: git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
