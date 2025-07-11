@@ -19,8 +19,6 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-
-
 # Set work directory
 WORKDIR /app
 
@@ -31,13 +29,19 @@ COPY pyproject.toml uv.lock ./
 RUN pip install uv
 
 # Set uv index to a domestic mirror for faster installation
-ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+    UV_HTTP_TIMEOUT=300 \
+    UV_RETRIES=3 \
+    UV_CONCURRENT_DOWNLOADS=1
 
-# Install dependencies using uv
-RUN uv sync --frozen --no-dev --no-cache && \
+# Install dependencies using uv with retry mechanism
+RUN for i in 1 2 3; do \
+        uv sync --frozen --no-dev --no-cache && break || \
+        (echo "Attempt $i failed, retrying in 5 seconds..." && sleep 5); \
+    done && \
     uv pip list
 
-# Production stage#
+# Production stage
 FROM uhub.service.ucloud.cn/base-images/python:3.10-slim as production
 
 # Set build arguments
@@ -52,7 +56,11 @@ ENV PYTHONUNBUFFERED=1 \
     APP_VERSION=${APP_VERSION} \
     GIT_COMMIT=${GIT_COMMIT}
 
-ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+# Set uv configuration for production
+ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+    UV_HTTP_TIMEOUT=300 \
+    UV_RETRIES=3 \
+    UV_CONCURRENT_DOWNLOADS=1
 
 # Install runtime dependencies
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
@@ -70,7 +78,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code (exclude unnecessary files)
-COPY main.py ./
+COPY main.py config.py middleware.py ./
 COPY templates/ ./templates/
 COPY pyproject.toml uv.lock ./
 
