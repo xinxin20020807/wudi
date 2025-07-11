@@ -19,4 +19,7 @@ spec:
   steps:
     - name: git-clone
       image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
-      script: git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
+      script: |
+        cd $(workspaces.source.path)
+        git clone -b $(params.revision) -v $(params.url) .
+        ls -la
