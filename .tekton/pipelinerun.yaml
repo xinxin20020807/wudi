@@ -39,8 +39,8 @@ spec:
 
   # 简化的超时设置
   timeouts:
-    pipeline: "10m"
-    tasks: "5m"
+    pipeline: "30m"
+    tasks: "15m"
 
   # 简化的安全上下文
   podTemplate:
