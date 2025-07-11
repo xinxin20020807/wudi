@@ -36,7 +36,7 @@ spec:
 
     - name: build-and-push
       workingDir: $(workspaces.source.path)
-      image: uhub.service.ucloud.cn/base-images/executor:latest
+      image: uhub.service.ucloud.cn/base-images/executor:v1.9.0
       runAfter:
         - debug-context
       command:
