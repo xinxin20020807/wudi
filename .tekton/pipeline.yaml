@@ -53,4 +53,4 @@ spec:
         - name: image-url
           value: $(params.image-url)
         - name: image-tag
-          value: $(params.image-tag)
+          value: $(tasks.git-clone.results.commit)

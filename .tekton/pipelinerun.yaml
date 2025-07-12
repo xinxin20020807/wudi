@@ -21,7 +21,7 @@ spec:
     - name: image-url
       value: "uhub.service.ucloud.cn/xinxin-istio/wudi"
     - name: image-tag
-      value: "$(tasks.git-clone.results.commit)"
+      value: "latest"
 
   # Use PVC for persistent data sharing between tasks
   workspaces:
