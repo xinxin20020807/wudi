@@ -16,9 +16,13 @@ spec:
   workspaces:
     - name: source
       description: The git repo will be cloned onto the volume backing this workspace
+  results:
+    - name: commit
+      description: The git commit SHA
   steps:
     - name: git-clone
       image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
       script: |
         git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
-        ls -la
+        cd $(workspaces.source.path)/source
+        git rev-parse HEAD | tr -d '\n' | tee $(results.commit.path)
