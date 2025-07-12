@@ -20,22 +20,8 @@ spec:
     - name: source
       description: Holds the context and Dockerfile
   steps:
-    - name: debug-context
-      workingDir: $(workspaces.source.path)
-      image: uhub.service.ucloud.cn/base-images/alpine:3.18
-      script: |
-        echo "=== Debug: Checking build context ==="
-        echo "Working directory: $(pwd)"
-        echo "Directory contents:"
-        ls -la
-        echo "\n=== Dockerfile content ==="
-        cat $(params.dockerfile) || echo "Dockerfile not found!"
-        echo "\n=== Git status (if available) ==="
-        git log --oneline -1 2>/dev/null || echo "Not a git repository"
-        echo "=== End debug info ==="
-
     - name: build-and-push
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/source
       image: uhub.service.ucloud.cn/base-images/executor:v1.9.0
       runAfter:
         - debug-context
@@ -43,18 +29,13 @@ spec:
         - /kaniko/executor
       args:
         - --dockerfile=$(params.dockerfile)
-        - --context=$(workspaces.source.path)
-        - --destination=$(params.image-url):$(params.image-tag)
-        - --cleanup
-        - --reproducible
-        - --cache=false
-        - --no-push-cache
-        - --no-cache
-        - --force
+        - --context=$(workspaces.source.path)/source
+        - --insecure
+        - --insecure-pull
         - --skip-tls-verify
-        - --log-format=text
-        - --verbosity=info
-        - --build-arg=BUILDKIT_INLINE_CACHE=0
+        - --skip-tls-verify-pull
+        - --skip-push-permission-check
+        - --destination=$(params.image-url):$(params.image-tag)
       env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker

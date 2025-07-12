@@ -20,9 +20,5 @@ spec:
     - name: git-clone
       image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
       script: |
-        cd $(workspaces.source.path)
-        # Clean workspace if it exists
-        rm -rf *
-
-        git clone -b $(params.revision) -v $(params.url) .
+        git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
         ls -la

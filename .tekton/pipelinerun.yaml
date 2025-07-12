@@ -51,12 +51,12 @@ spec:
     # Resource limits
     resources:
       requests:
-        memory: "1Gi"
+        memory: "256Mi"
         cpu: "500m"
         ephemeral-storage: "5Gi"
       limits:
-        memory: "4Gi"
-        cpu: "2000m"
+        memory: "512Mi"
+        cpu: "1000m"
         ephemeral-storage: "10Gi"
     # Node selection for better performance
     nodeSelector:
