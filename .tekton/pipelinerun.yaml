@@ -15,13 +15,13 @@ spec:
     name: ci-pipeline
   params:
     - name: git-url
-      value: "https://github.com/xinxin20020807/wudi"
+      value: "{{repo_url}}" # Use placeholder for repo URL
     - name: git-revision
-      value: "main"
+      value: "{{revision}}" # This will be the PR's head commit SHA
     - name: image-url
       value: "uhub.service.ucloud.cn/wudi1111/wudi"
     - name: image-tag
-      value: "latest"
+      value: "pr-{{pull_request_number}}" # This will be the PR's source branch name
 
   # Use PVC for persistent data sharing between tasks
   workspaces:
