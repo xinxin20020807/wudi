@@ -23,6 +23,9 @@ spec:
     - name: git-clone
       image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
       script: |
+        # The original git clone command is still here
         git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
+
+        # New commands to get the commit SHA
         cd $(workspaces.source.path)/source
         git rev-parse HEAD | tr -d '\n' | tee $(results.commit.path)

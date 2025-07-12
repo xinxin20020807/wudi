@@ -19,7 +19,7 @@ spec:
     - name: git-revision
       value: "main"
     - name: image-url
-      value: "uhub.service.ucloud.cn/xinxin-istio/wudi"
+      value: "uhub.service.ucloud.cn/wudi1111/wudi"
     - name: image-tag
       value: "latest"
 
