@@ -23,7 +23,7 @@ spec:
     - name: image-tag
       value: "pr-{{pull_request_number}}" # This will be the PR's source branch name
 
-  # Use PVC for persistent data sharing between tasks
+  # Use PVC for persistent data sharing between tasks#
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
