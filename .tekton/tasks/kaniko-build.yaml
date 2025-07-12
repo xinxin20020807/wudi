@@ -34,7 +34,7 @@ spec:
         - --insecure-pull
         - --skip-tls-verify
         - --skip-tls-verify-pull
-        - --skip-push-permission-check
+        # - --skip-push-permission-check
         - --destination=$(params.image-url):$(params.image-tag)
       env:
         - name: DOCKER_CONFIG
