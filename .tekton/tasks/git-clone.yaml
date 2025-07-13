@@ -41,8 +41,14 @@ spec:
           ssh-keyscan github.com >> "$HOME"/.ssh/known_hosts 2>/dev/null || true
         fi
 
+        # Convert HTTPS URL to SSH URL if needed
+        GIT_URL="$(params.url)"
+        if [[ "$GIT_URL" == https://github.com/* ]]; then
+          GIT_URL=$(echo "$GIT_URL" | sed 's|https://github.com/|git@github.com:|')
+        fi
+
         # Clone the repository
-        git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
+        git clone -b $(params.revision) -v "$GIT_URL" $(workspaces.source.path)/source
 
         # Get the commit SHA
         cd $(workspaces.source.path)/source
