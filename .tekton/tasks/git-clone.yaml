@@ -32,50 +32,6 @@ spec:
           value: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o BatchMode=yes"
       script: |
         set -eu
-
-        # Create home directory
-        mkdir -p "$HOME"
-
-        # Setup SSH if ssh-directory workspace is provided
-        if [ "$(workspaces.ssh-directory.bound)" == "true" ] ; then
-          echo "Setting up SSH credentials..."
-          cp -R "$(workspaces.ssh-directory.path)" "$HOME"/.ssh
-          chmod 700 "$HOME"/.ssh
-          chmod -R 400 "$HOME"/.ssh/*
-
-          # Create SSH config to disable host key checking
-          echo "Host *" > "$HOME"/.ssh/config
-          echo "    StrictHostKeyChecking no" >> "$HOME"/.ssh/config
-          echo "    UserKnownHostsFile /dev/null" >> "$HOME"/.ssh/config
-          echo "    BatchMode yes" >> "$HOME"/.ssh/config
-          echo "    LogLevel ERROR" >> "$HOME"/.ssh/config
-          chmod 600 "$HOME"/.ssh/config
-
-          echo "SSH setup completed"
-        else
-          echo "No SSH workspace provided, using HTTPS"
-        fi
-
-        # Convert HTTPS URL to SSH URL if SSH is configured
-        GIT_URL="$(params.url)"
-        if [ "$(workspaces.ssh-directory.bound)" == "true" ] ; then
-          if [[ "$GIT_URL" == https://github.com/* ]]; then
-            GIT_URL=$(echo "$GIT_URL" | sed 's|https://github.com/|git@github.com:|')
-            echo "Converted to SSH URL: $GIT_URL"
-          elif [[ "$GIT_URL" == https://gitlab.com/* ]]; then
-            GIT_URL=$(echo "$GIT_URL" | sed 's|https://gitlab.com/|git@gitlab.com:|')
-            echo "Converted to SSH URL: $GIT_URL"
-          fi
-        fi
-
-        echo "Cloning repository: $GIT_URL"
-        echo "Branch/Revision: $(params.revision)"
-
-        # Clone the repository
-        git clone -b $(params.revision) -v "$GIT_URL" $(workspaces.source.path)/source
-
-        # Get the commit SHA
+        git clone -b $(params.revision) $(params.url) $(workspaces.source.path)/source
         cd $(workspaces.source.path)/source
-        git rev-parse HEAD | tr -d '\n' | tee $(results.commit.path)
-
-        echo "Clone completed successfully"
+        echo "::set-output name=commit::$(git rev-parse HEAD)"
