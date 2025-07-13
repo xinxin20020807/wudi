@@ -44,13 +44,11 @@ spec:
           chmod -R 400 "$HOME"/.ssh/*
 
           # Create SSH config to disable host key checking
-          cat > "$HOME"/.ssh/config <<'EOF'
-Host *
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-    BatchMode yes
-    LogLevel ERROR
-EOF
+          echo "Host *" > "$HOME"/.ssh/config
+          echo "    StrictHostKeyChecking no" >> "$HOME"/.ssh/config
+          echo "    UserKnownHostsFile /dev/null" >> "$HOME"/.ssh/config
+          echo "    BatchMode yes" >> "$HOME"/.ssh/config
+          echo "    LogLevel ERROR" >> "$HOME"/.ssh/config
           chmod 600 "$HOME"/.ssh/config
 
           echo "SSH setup completed"
