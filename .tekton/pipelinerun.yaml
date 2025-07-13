@@ -17,7 +17,7 @@ spec:
     name: ci-pipeline
   params:
     - name: git-url
-      value: "git@github.com:{{repo_owner}}/{{repo_name}}.git" # 手动构建 SSH URL
+      value: "git@github.com:xinxin20020807/wudi.git"
     - name: git-revision
       value: "{{revision}}" # This will be the PR's head commit SHA
     - name: image-url
