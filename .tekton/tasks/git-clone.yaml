@@ -28,22 +28,54 @@ spec:
       env:
         - name: HOME
           value: /tekton/home
+        - name: GIT_SSH_COMMAND
+          value: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
       script: |
         set -eu
 
+        # Create home directory
+        mkdir -p "$HOME"
+
         # Setup SSH if ssh-directory workspace is provided
         if [ "$(workspaces.ssh-directory.bound)" == "true" ] ; then
+          echo "Setting up SSH credentials..."
           cp -R "$(workspaces.ssh-directory.path)" "$HOME"/.ssh
           chmod 700 "$HOME"/.ssh
           chmod -R 400 "$HOME"/.ssh/*
 
-          # Add GitHub to known_hosts if not present
-          ssh-keyscan github.com >> "$HOME"/.ssh/known_hosts 2>/dev/null || true
+          # Ensure we have a known_hosts file
+          touch "$HOME"/.ssh/known_hosts
+          chmod 644 "$HOME"/.ssh/known_hosts
+
+          # Add GitHub to known_hosts
+          ssh-keyscan -H github.com >> "$HOME"/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H gitlab.com >> "$HOME"/.ssh/known_hosts 2>/dev/null || true
+
+          echo "SSH setup completed"
+        else
+          echo "No SSH workspace provided, using HTTPS"
         fi
 
+        # Convert HTTPS URL to SSH URL if SSH is configured
+        GIT_URL="$(params.url)"
+        if [ "$(workspaces.ssh-directory.bound)" == "true" ] ; then
+          if [[ "$GIT_URL" == https://github.com/* ]]; then
+            GIT_URL=$(echo "$GIT_URL" | sed 's|https://github.com/|git@github.com:|')
+            echo "Converted to SSH URL: $GIT_URL"
+          elif [[ "$GIT_URL" == https://gitlab.com/* ]]; then
+            GIT_URL=$(echo "$GIT_URL" | sed 's|https://gitlab.com/|git@gitlab.com:|')
+            echo "Converted to SSH URL: $GIT_URL"
+          fi
+        fi
+
+        echo "Cloning repository: $GIT_URL"
+        echo "Branch/Revision: $(params.revision)"
+
         # Clone the repository
-        git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
+        git clone -b $(params.revision) -v "$GIT_URL" $(workspaces.source.path)/source
 
         # Get the commit SHA
         cd $(workspaces.source.path)/source
         git rev-parse HEAD | tr -d '\n' | tee $(results.commit.path)
+
+        echo "Clone completed successfully"
