@@ -16,16 +16,34 @@ spec:
   workspaces:
     - name: source
       description: The git repo will be cloned onto the volume backing this workspace
+    - name: ssh-directory
+      description: A .ssh directory with private key, known_hosts, config, etc.
+      optional: true
   results:
     - name: commit
       description: The git commit SHA
   steps:
     - name: git-clone
       image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
+      env:
+        - name: HOME
+          value: /tekton/home
       script: |
-        # The original git clone command is still here
+        set -eu
+
+        # Setup SSH if ssh-directory workspace is provided
+        if [ "$(workspaces.ssh-directory.bound)" == "true" ] ; then
+          cp -R "$(workspaces.ssh-directory.path)" "$HOME"/.ssh
+          chmod 700 "$HOME"/.ssh
+          chmod -R 400 "$HOME"/.ssh/*
+
+          # Add GitHub to known_hosts if not present
+          ssh-keyscan github.com >> "$HOME"/.ssh/known_hosts 2>/dev/null || true
+        fi
+
+        # Clone the repository
         git clone -b $(params.revision) -v $(params.url) $(workspaces.source.path)/source
 
-        # New commands to get the commit SHA
+        # Get the commit SHA
         cd $(workspaces.source.path)/source
         git rev-parse HEAD | tr -d '\n' | tee $(results.commit.path)

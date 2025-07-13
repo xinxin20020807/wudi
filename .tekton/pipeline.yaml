@@ -27,6 +27,8 @@ spec:
   workspaces:
     - name: shared-data
       description: Shared workspace for source code
+    - name: git-ssh-credentials
+      description: SSH credentials for git clone
 
   tasks:
     - name: git-clone
@@ -35,6 +37,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-data
+        - name: ssh-directory
+          workspace: git-ssh-credentials
       params:
         - name: url
           value: $(params.git-url)

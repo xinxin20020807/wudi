@@ -17,7 +17,7 @@ spec:
     name: ci-pipeline
   params:
     - name: git-url
-      value: "{{repo_url}}" # Use placeholder for repo URL
+      value: "{{repo_ssh_url}}" # Use SSH URL placeholder
     - name: git-revision
       value: "{{revision}}" # This will be the PR's head commit SHA
     - name: image-url
@@ -25,7 +25,7 @@ spec:
     - name: image-tag
       value: "pr-{{pull_request_number}}" # This will be the PR's source branch name
 
-  # Use PVC for persistent data sharing between tasks#
+  # Use PVC for persistent data sharing between tasks
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
@@ -38,6 +38,9 @@ spec:
           resources:
             requests:
               storage: 10Gi
+    - name: git-ssh-credentials
+      secret:
+        secretName: git-ssh-key
 
   # Timeout settings
   timeouts:
