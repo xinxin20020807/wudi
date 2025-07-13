@@ -32,6 +32,7 @@ spec:
           value: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o BatchMode=yes"
       script: |
         set -eu
-        git clone -b $(params.revision) $(params.url) $(workspaces.source.path)/source
+        git clone $(params.url) $(workspaces.source.path)/source
         cd $(workspaces.source.path)/source
+        git checkout $(params.revision)
         echo "::set-output name=commit::$(git rev-parse HEAD)"
