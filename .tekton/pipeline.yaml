@@ -27,14 +27,18 @@ spec:
   workspaces:
     - name: shared-data
       description: Shared workspace for source code
+    - name: git-ssh-credentials
+      description: SSH credentials for git clone
 
   tasks:
     - name: git-clone
       taskRef:
         name: git-clone
       workspaces:
-        - name: output
+        - name: source
           workspace: shared-data
+        - name: ssh-directory
+          workspace: git-ssh-credentials
       params:
         - name: url
           value: $(params.git-url)
@@ -53,4 +57,4 @@ spec:
         - name: image-url
           value: $(params.image-url)
         - name: image-tag
-          value: $(params.image-tag)
+          value: $(tasks.git-clone.results.commit)

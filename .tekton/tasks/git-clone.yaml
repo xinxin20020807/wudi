@@ -1,48 +1,38 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: git-clone
-  namespace: pipelines-as-code
 spec:
-  description: |
-    Clones a git repository.
+  description: Clone the code repository to the workspace.
   params:
     - name: url
-      description: Repository URL to clone from.
       type: string
+      description: git url to clone
+      default: ""
     - name: revision
-      description: Revision to checkout.
       type: string
+      description: git branch to checkout
       default: "main"
   workspaces:
-    - name: output
-      description: The git repo will be cloned onto the volume backing this Workspace.
+    - name: source
+      description: The git repo will be cloned onto the volume backing this workspace
+    - name: ssh-directory
+      description: A .ssh directory with private key, known_hosts, config, etc.
+      optional: true
   results:
     - name: commit
-      description: The precise commit SHA that was fetched by this Task.
-    - name: url
-      description: The precise URL that was fetched by this Task.
+      description: The git commit SHA
   steps:
-    - name: cleanup
-      image: uhub.service.ucloud.cn/base-images/alpine:3.18
-      workingDir: $(workspaces.output.path)
+    - name: git-clone
+      image: uhub.service.ucloud.cn/xinxin-istio/git:v2.45.2
+      env:
+        - name: HOME
+          value: /tekton/home
+        - name: GIT_SSH_COMMAND
+          value: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o BatchMode=yes"
       script: |
-        #!/bin/sh
-        set -e
-        echo "Cleaning up workspace directory..."
-        # a safe way to delete contents without deleting the directory itself
-        find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
-
-    - name: clone
-      image: uhub.service.ucloud.cn/base-images/git-init:v0.40.2
-      workingDir: $(workspaces.output.path)
-      script: |
-        #!/bin/sh
-        set -ex
-        git config --global http.version HTTP/1.1
-        git config --global http.postBuffer 524288000
-        git clone "$(params.url)" .
-        git checkout "$(params.revision)"
-        COMMIT_SHA=$(git rev-parse HEAD)
-        echo -n "$COMMIT_SHA" > "$(results.commit.path)"
-        echo -n "$(params.url)" > "$(results.url.path)"
+        set -eu
+        git clone $(params.url) $(workspaces.source.path)/source
+        cd $(workspaces.source.path)/source
+        git checkout $(params.revision)
+        echo "::set-output name=commit::$(git rev-parse HEAD)"

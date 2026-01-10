@@ -21,13 +21,20 @@ spec:
       description: Holds the context and Dockerfile
   steps:
     - name: build-and-push
-      workingDir: $(workspaces.source.path)
-      image: uhub.service.ucloud.cn/base-images/executor:latest
+      workingDir: $(workspaces.source.path)/source
+      image: uhub.service.ucloud.cn/base-images/executor:v1.9.0
+      runAfter:
+        - debug-context
       command:
         - /kaniko/executor
       args:
         - --dockerfile=$(params.dockerfile)
-        - --context=$(workspaces.source.path)
+        - --context=$(workspaces.source.path)/source
+        - --insecure
+        - --insecure-pull
+        - --skip-tls-verify
+        - --skip-tls-verify-pull
+        # - --skip-push-permission-check
         - --destination=$(params.image-url):$(params.image-tag)
       env:
         - name: DOCKER_CONFIG

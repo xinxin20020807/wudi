@@ -1,9 +1,9 @@
-# PipelineRun
+# PipelineRun with PVC for data persistence between tasks
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  namespace: pipelines-as-code
   generateName: ci-pipeline-run-
+  namespace: pipelines-as-code
   annotations:
     pipelinesascode.tekton.dev/on-comment: "/retest"
     pipelinesascode.tekton.dev/on-cel-expression: |
@@ -15,35 +15,70 @@ metadata:
 spec:
   pipelineRef:
     name: ci-pipeline
-
   params:
     - name: git-url
-      value: "https://github.com/xinxin20020807/wudi"
+      value: "{{repo_url}}"
     - name: git-revision
-      value: "main"
+      value: "{{revision}}" # This will be the PR's head commit SHA
     - name: image-url
-      value: "uhub.service.ucloud.cn/base-images/wudi-app"
+      value: "uhub.service.ucloud.cn/wudi1111/wudi"
     - name: image-tag
-      value: "latest"
+      value: "pr-{{pull_request_number}}" # This will be the PR's source branch name
 
+  # Use PVC for persistent data sharing between tasks
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
+        metadata:
+          generateName: "workspace-"
         spec:
-          storageClassName: ebs-ssd
           accessModes:
             - ReadWriteOnce
+          storageClassName: "ebs-ssd"  # 根据你的集群调整
           resources:
             requests:
-              storage: 20Gi
+              storage: 10Gi
+    - name: git-ssh-credentials
+      secret:
+        secretName: git-ssh-key
 
-  # 简化的超时设置
+  # Timeout settings
   timeouts:
-    pipeline: "10m"
-    tasks: "5m"
+    pipeline: "30m"
+    tasks: "15m"
 
-  # 简化的安全上下文
+  # Pod template with security and resource settings
   podTemplate:
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
+      fsGroup: 0
+    # Resource limits
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "500m"
+        ephemeral-storage: "5Gi"
+      limits:
+        memory: "512Mi"
+        cpu: "1000m"
+        ephemeral-storage: "10Gi"
+    # Node selection for better performance
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    # Tolerations for dedicated nodes
+    tolerations:
+      - key: "tekton"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    # Affinity for better scheduling
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: "node-type"
+                  operator: In
+                  values: ["compute"]
